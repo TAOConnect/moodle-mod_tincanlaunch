@@ -762,12 +762,12 @@ function tincanlaunch_getactor($instance)
     echo "</pre>";
     die();*/
 
-    if ($USER->idnumber && $settings['tincanlaunchcustomacchp']) {
+    if ($USER->id && $settings['tincanlaunchcustomacchp']) {
         return array(
-            "name" => fullname($USER),
+            "name" => $USER->id,
             "account" => array(
                 "homePage" => $settings['tincanlaunchcustomacchp'],
-                "name" => $USER->idnumber
+                "name" => $USER->id
             ),
             "objectType" => "Agent"
         );
