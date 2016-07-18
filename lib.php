@@ -704,12 +704,12 @@ function tincanlaunch_getactor($instance) {
 
     $settings = tincanlaunch_settings($instance);
 
-    if ($USER->idnumber && $settings['tincanlaunchcustomacchp']) {
+    if ($USER->id && $settings['tincanlaunchcustomacchp']) {
         $agent = array(
-            "name" => fullname($USER),
+            "name" => $USER->id,
             "account" => array(
                 "homePage" => $settings['tincanlaunchcustomacchp'],
-                "name" => $USER->idnumber
+                "name" => $USER->id
             ),
             "objectType" => "Agent"
         );
