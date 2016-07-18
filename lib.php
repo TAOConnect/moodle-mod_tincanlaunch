@@ -763,7 +763,7 @@ function tincanlaunch_getactor($instance)
     die();*/
 
     if ($USER->id && $settings['tincanlaunchcustomacchp']) {
-        return array(
+        $agent = array(
             "name" => $USER->id,
             "account" => array(
                 "homePage" => $settings['tincanlaunchcustomacchp'],
