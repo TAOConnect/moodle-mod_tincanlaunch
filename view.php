@@ -90,13 +90,13 @@ if ($tincanlaunch->intro) { // Conditions to show the intro can change to look f
         //Add some new content              
         if (!$('#tincanlaunch_status').length) {
             var message = "<?php echo get_string('tincanlaunch_progress', 'tincanlaunch'); ?>";
-            $('#region-main').append('\
+            $('[role="main"]').append('\
                 <div id="tincanlaunch_status"> \
                     <p id="tincanlaunch_attemptprogress">'+message+'</p> \
                     <p id="tincanlaunch_exit"> \
-                        <a href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Return to course"> \
+                        <h3><a href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Return to course"> \
                             Return to course \
-                        </a> \
+                        </a></h3> \
                     </p> \
                 </div>\
             ');
@@ -140,11 +140,11 @@ echo html_writer::tag('h1', $tincanlaunch->name);
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);
     if ($tincanlaunch->tincanmultipleregs) {
-        echo "<p id='tincanlaunch_newattempt'><a onclick=\"mod_tincanlaunch_launchexperience('"
+        echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
             .$registrationid
             ."')\" style=\"cursor: pointer;\">"
             .get_string('tincanlaunch_attempt', 'tincanlaunch')
-            ."</a></p>";
+            ."</a></h3></p>";
     }
     foreach ($registrationdatafromlrs as $key => $item) {
 
@@ -176,11 +176,11 @@ if ($lrsrespond == 200) {
     $table->data = $registrationdatafromlrs;
     echo html_writer::table($table);
 } else {
-    echo "<p id='tincanlaunch_newattempt'><a onclick=\"mod_tincanlaunch_launchexperience('"
+    echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
         .$registrationid
         ."')\" style=\"cursor: pointer;\">"
         .get_string('tincanlaunch_attempt', 'tincanlaunch')
-        ."</a></p>";
+        ."</a></h3></p>";
 }
 
 //Add a form to be posted based on the attempt selected
