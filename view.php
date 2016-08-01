@@ -135,6 +135,8 @@ if ($lrsrespond!= 200 && $lrsrespond != 404) {
     die();
 }
 
+echo html_writer::tag('h1', $tincanlaunch->name);
+
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);
     if ($tincanlaunch->tincanmultipleregs) {
