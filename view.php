@@ -114,14 +114,16 @@ if ($lrsrespond != 200 && $lrsrespond != 404) {
     die();
 }
 
+echo "<h1>$tincanlaunch->name</h1>";
+
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);
     if ($tincanlaunch->tincanmultipleregs) {
-        echo "<p id='tincanlaunch_newattempt'><a onclick=\"mod_tincanlaunch_launchexperience('"
+        echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
             .$registrationid
             ."')\" style=\"cursor: pointer;\">"
             .get_string('tincanlaunch_attempt', 'tincanlaunch')
-            ."</a></p>";
+            ."</a></h3></p>";
     }
     foreach ($registrationdatafromlrs as $key => $item) {
 
@@ -153,11 +155,11 @@ if ($lrsrespond == 200) {
     $table->data = $registrationdatafromlrs;
     echo html_writer::table($table);
 } else {
-    echo "<p id='tincanlaunch_newattempt'><a onclick=\"mod_tincanlaunch_launchexperience('"
+    echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
         .$registrationid
         ."')\" style=\"cursor: pointer;\">"
         .get_string('tincanlaunch_attempt', 'tincanlaunch')
-        ."</a></p>";
+        ."</a></h3></p>";
 }
 
 // Add a form to be posted based on the attempt selected.
