@@ -122,7 +122,7 @@ $string['tincanlaunchviewlaunchlink'] = 'launch';
 
 $string['tincanlaunch_completed'] = 'Experience complete!';
 $string['tincanlaunch_progress'] = 'Attempt in progress.';
-$string['tincanlaunch_attempt'] = 'Start a new session';
+$string['tincanlaunch_attempt'] = 'Start this session';
 $string['tincanlaunch_notavailable'] = 'The Learning Record Store is not available. Please contact a system administrator.
 
 If you are the system administrator, go to Site admin / Development / Debugging and set Debug messages to DEVELOPER. Set it back to NONE or MINIMAL once the error details have been recorded.';

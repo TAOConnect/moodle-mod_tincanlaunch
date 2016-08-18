@@ -69,13 +69,13 @@ if ($tincanlaunch->intro) { // Conditions to show the intro can change to look f
         //A dd some new content.
         if (!$('#tincanlaunch_status').length) {
             var message = "<?php echo get_string('tincanlaunch_progress', 'tincanlaunch'); ?>";
-            $('#region-main').append('\
+            $('div[role="main"]').append('\
                 <div id="tincanlaunch_status"> \
                     <p id="tincanlaunch_attemptprogress">'+message+'</p> \
                     <p id="tincanlaunch_exit"> \
-                        <a href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Return to course"> \
+                        <h3><a href="complete.php?id=<?php echo $id ?>&n=<?php echo $n ?>" title="Return to course"> \
                             Return to course \
-                        </a> \
+                        </a></h3> \
                     </p> \
                 </div>\
             ');
