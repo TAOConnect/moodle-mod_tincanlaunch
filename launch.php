@@ -23,14 +23,35 @@
  */
 
 require_once('header.php');
-
+global $COURSE, $DB, $USER;
 // Trigger Activity launched event.
+
 $event = \mod_tincanlaunch\event\activity_launched::create(array(
     'objectid' => $tincanlaunch->id,
     'context' => $context,
 ));
+
+//to enter the timestarted value into course_modules_completion table
+$date = date("Y-m-d H:i:s");
+$cur_date = strtotime($date);
+$activityData =  $DB->get_record('course_modules_completion', array('coursemoduleid'=> $context->instanceid,'userid'=> $USER->id));
+if(empty($activityData)){
+    $data = array('coursemoduleid'=> $context->instanceid,
+                  'userid'=> $USER->id,
+                   'completionstate'=> 0,
+                   'viewed'=>1,
+                   'timestarted'=> $cur_date,
+                   'timemodified'=>$cur_date,
+                   'timecompleted'=>''
+            );
+    $DB->insert_record('course_modules_completion', $data);
+}
+//to enter the timestarted value into course_modules_completion table
+
+//$event->add_record_snapshot('course_modules_completion', $data);
 $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('tincanlaunch', $tincanlaunch);
+
 $event->trigger();
 
 // Get the registration id.
