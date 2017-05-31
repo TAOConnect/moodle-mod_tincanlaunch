@@ -63,7 +63,6 @@ $response = $lrs->queryStatements(array(
 ));
 $activityData =  processStatements($response->content->getStatements());
 //$data = explode('captivate-activity',$activityData['97bfc34e-e349-4e7a-98a5-96fb0d4edd72']['activity']); //working to add condition for captivate-activity only
-
 //to get all data, from tincan for launched activity
 if ($completion->is_enabled($cm) && $tincanlaunch->tincanverbid) {
     $completion->update_state($cm, COMPLETION_COMPLETE);
@@ -83,20 +82,26 @@ if ($completion->is_enabled($cm) && $tincanlaunch->tincanverbid) {
     $activityId = $DB->get_record('course_modules_completion', array('coursemoduleid'=> $context->instanceid,'userid'=> $USER->id));
     $latest_session_data = current($activityData);
     $latest_access_time = strtotime($latest_session_data['completed']);
-
     // to check if there is a record in completion_module_table and user has launched/updating first attempt
     
  //   if(!empty($activityId) && count($activityData) == 1){ 
     if(!empty($activityId)){ 
+         //to update the last access time
+        $dataLastAccess = array('id'=> $activityId->id,
+                       'lastaccess'=> $latest_access_time
+                    );
+        $DB->update_record('course_modules_completion', $dataLastAccess);
         $time = '';
+        
         $activityResponse = '';
         $activityData = array_reverse($activityData); // $activityData have latest record from lrs, reversed data to get data of first attemted response
         foreach($activityData as $eachAct){
+            
             $check_ativity_type = explode('captivate-activity',$eachAct['activity']); //added condition for captivate-activity only
             if(!empty($eachAct['responses']) && sizeOf($check_ativity_type) > 1){
                 $eachAct['responses'] = array_reverse($eachAct['responses']); //reversed array to get the first attempted data in case user went through slides multiple time
                 foreach($eachAct['responses'] as $each_response){
-                     if(strpos(strtolower($each_response['text']),'feedback') == true){ // check if user has experienced feedback slide
+                     if((strpos(strtolower($each_response['text']),'feedback') == true) || (strpos(strtolower($each_response['text']),'next session') == true)){ // check if user has experienced feedback slide
                          $getCompletedTime = explode('on' ,$each_response['text']);
                          $time = end($getCompletedTime); //get the last value of array i.e.time
                          $convertTime = strtotime($time);
@@ -109,15 +114,10 @@ if ($completion->is_enabled($cm) && $tincanlaunch->tincanverbid) {
                          exit;
                      }
                  }
-                 //to update the last access time
-                $dataLastAccess = array('id'=> $activityId->id,
-                               'lastaccess'=> $latest_access_time
-                            );
-                $DB->update_record('course_modules_completion', $dataLastAccess);
+                
                 exit;
             }
         }
-
     }
 }
 
