@@ -39,6 +39,8 @@ require_once("$CFG->dirroot/mod/tincanlaunch/WatershedPHP/watershed.php");
 // SCORM library from the SCORM module. Required for its xml2Array class by tincanlaunch_process_new_package.
 require_once("$CFG->dirroot/mod/scorm/datamodels/scormlib.php");
 
+require_once("$CFG->dirroot/vendor/autoload.php");
+
 global $tincanlaunchsettings;
 $tincanlaunchsettings = null;
 
@@ -475,10 +477,15 @@ function tincanlaunch_extend_settings_navigation(settings_navigation $settingsna
 
 // Called by Moodle core.
 function tincanlaunch_get_completion_state($course, $cm, $userid, $type) {
+    error_log("We're looking at get_completion_state for user $userid");
+
     global $CFG, $DB;
     $result = $type; // Default return value.
 
-     // Get tincanlaunch.
+    // Set the timecompleted on this if it had not been set yet 
+    tincanlaunch_set_timecompleted($course, $cm, $userid);
+
+    // Get tincanlaunch.
     if (!$tincanlaunch = $DB->get_record('tincanlaunch', array('id' => $cm->instance))) {
         throw new Exception("Can't find activity {$cm->instance}"); // TODO: localise this.
     }
@@ -506,6 +513,133 @@ function tincanlaunch_get_completion_state($course, $cm, $userid, $type) {
     }
 
     return $result;
+}
+
+// Added function by Kyle Maharlika @ TAO Connect, Inc.
+// This function checks whether or not the session has actually been completed 
+// by a user by checking to see if there is a view of the 'Session Feedback' or 
+// 'Next Session' slide. If either of these have been viewed, that means that 
+// the user has finished looking through the entire session and has completed it 
+function tincanlaunch_set_timecompleted($course, $cm, $userid) {
+    error_log("We're looking at time completed for user $userid");
+    global $CFG, $DB, $USER;
+
+    // Get tincanlaunch.
+    if (!$tincanlaunch = $DB->get_record('tincanlaunch', array('id' => $cm->instance))) {
+        throw new Exception("Can't find activity {$cm->instance}"); // TODO: localise this.
+    }
+
+    // First check if timecompleted for this record already exists. 
+    if (!$tincanlaunch_completion = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cm->id, 'userid' => $userid))) {
+        throw new Exception("Can't find completion for activity {$cm->id}");
+    }
+
+    // If so, then we don't want to proceed with any of the rest of these functions
+    if ($tincanlaunch_completion->timecompleted) {
+        return;
+    }
+
+    // TODO move this config out of here once we find that this is working 
+    // properly
+    $dbhost = 'll-dev-us-w1.tao.local';
+    $dbname = 'learninglocker';
+    $username = 'root';
+    $password = 'Tao1234!'; 
+    // Connect to database
+    $m = new MongoDB\Client("mongodb://$dbhost", array("username" => $username , "password" => $password));
+    $db = $m->$dbname;
+
+    // select the collection
+    $collection = $db->statements;
+    
+    // set up the query
+    // find the completion by this user, for this tincanactivityid, where they experienced the slide title 'Session Feedback' or 'Next Session'
+    $regex = [ '$regex'=> '^'.$tincanlaunch->tincanactivityid.'.*' ]; // this is a regex because the statement appends some extra stuff to the identifier, but the base of the identifier is the same as the tincanactivityid
+    $query = [ 'statement.actor.name'=> $userid, 
+        'statement.object.id'=> $regex, 
+        'statement.actor.account.homePage' => $CFG->wwwroot, 
+        '$or'=> [
+            ['statement.object.definition.name.en-US'=> 'Session%20Feedback'], 
+            ['statement.object.definition.name.en-US' => 'Next%20Session']
+        ] 
+    ];
+    $sort = [ 'timestamp' => 1 ];
+    $projection = ['timestamp' => 1];
+    $limit = 1;
+    $parameters = [ 'projection' => $projection, 'sort' => $sort, 'limit' => $limit];
+
+    // result
+    $cursor = $collection->find($query, $parameters);
+
+    // I was using the count function to prevent always going into the cursor 
+    // results, but the count function doesn't seem to work as expected 
+    foreach ($cursor as $result) {
+        // the original time stamp is in milliseconds, so we need to divide by 
+        // integer value 1000 to get the proper unix timestamp 
+        $timecompleted = intval($result->timestamp->milliseconds)/1000;
+        $tincanlaunch_completion->timecompleted = $timecompleted;
+        $DB->update_record('course_modules_completion', $tincanlaunch_completion);
+        break;
+    }
+}
+
+// Set timestarted on the row in the database. If the timestarted is already set, then do nothing
+function tincanlaunch_set_timestarted($course, $cm, $userid) {
+    error_log("We're looking at timestarted for user $userid");
+    global $CFG, $DB;
+
+    // Get tincanlaunch.
+    if (!$tincanlaunch = $DB->get_record('tincanlaunch', array('id' => $cm->instance))) {
+        throw new Exception("Can't find activity {$cm->instance}"); // TODO: localise this.
+    }
+
+    // First, we need to check if the timestarted value is already set
+    if ($tincanlaunch_completion = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cm->id, 'userid' => $userid))) {
+        // If timestarted already exists, then we don't want to proceed with any of the rest of these functions
+        if ($tincanlaunch_completion->timestarted) {
+            return;
+        }
+
+        // If timestarted doesn't already exist, let's set the current time to the 'timestarted'
+        $current_time = time();
+        $tincanlaunch_completion->timestarted = $current_time;
+        $DB->update_record('course_modules_completion', $tincanlaunch_completion);
+    } else {
+        // It's possible that the row doesn't exist yet, so we can just create 
+        // it and insert it 
+        $current_time = time();
+        $data = array('coursemoduleid' => $cm->id,
+            'userid' => $userid,
+            'completionstate' => 0,
+            'viewed' => 1,
+            'timestarted' => $current_time,
+            'timemodified' => $current_time,
+            'timecompleted' => ''
+        );
+        $DB->insert_record('course_modules_completion', $data);
+
+        // no need to proceed, since the timestarted has been set properly
+        return;
+    }
+
+    
+}
+
+// Set lastaccess value on the row in the database.
+function tincanlaunch_set_lastaccess($course, $cm, $userid) {
+    error_log("We're looking at lastaccess for user $userid");
+    global $CFG, $DB;
+
+    // Get tincanlaunch.
+    if (!$tincanlaunch = $DB->get_record('tincanlaunch', array('id' => $cm->instance))) {
+        throw new Exception("Can't find activity {$cm->instance}"); // TODO: localise this.
+    }
+
+    // Update the lastaccess field if the row exists for this user
+    if ($tincanlaunch_completion = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cm->id, 'userid' => $userid))) {
+        $tincanlaunch_completion->lastaccess = time();
+        $DB->update_record('course_modules_completion', $tincanlaunch_completion);
+    }
 }
 
 // TinCanLaunch specific functions.
