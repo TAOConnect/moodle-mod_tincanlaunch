@@ -35,4 +35,20 @@ $userid = required_param('userid', PARAM_INT);
 $coursemoduleid = required_param('coursemoduleid', PARAM_RAW);
 $timecompleted = required_param('timecompleted', PARAM_INT);
 
-tincanlaunch_set_session_timecompleted($coursemoduleid, $userid, $timecompleted);
+$updated_message = "timecompleted updated successfully";
+$not_updated_message = "timecompleted already set and was not updated";
+$failed_message = "course module was not found or completion data not found for this user and coursemodule";
+$response = array();
+
+try {
+    $updated = tincanlaunch_set_session_timecompleted($coursemoduleid, $userid, $timecompleted);
+    if ($updated) {
+        $response['success'] = $updated_message;
+    } else {
+        $response['success'] = $not_updated_message;
+    }
+} catch (Exception $e) {
+    $response['error'] = $failed_message;
+}
+
+exit(json_encode($response));
