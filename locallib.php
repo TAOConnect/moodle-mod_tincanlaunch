@@ -124,7 +124,7 @@ function tincan_launched_statement($registrationid) {
  * @param string/UUID $registrationid The Tin Can Registration UUID associated with the launch.
  * @return string launch link including querystring.
  */
-function tincanlaunch_get_launch_url($registrationuuid) {
+function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
     global $tincanlaunch, $CFG;
     $tincanlaunchsettings = tincanlaunch_settings($tincanlaunch->id);
     $expiry = new DateTime('NOW');
@@ -168,17 +168,21 @@ function tincanlaunch_get_launch_url($registrationuuid) {
     }
 
     // Build the URL to be returned.
-    $rtnstring = $tincanlaunch->tincanlaunchurl."?".http_build_query(
-        array(
-            "endpoint" => $url,
-            "auth" => "Basic ".$basicauth,
-            "actor" => tincanlaunch_myjson_encode(
-                tincanlaunch_getactor($tincanlaunch->id)->asVersion(
-                    $tincanlaunchsettings['tincanlaunchlrsversion']
-                )
-            ),
-            "registration" => $registrationuuid
+    $args = array(
+        "endpoint" => $url,
+        "auth" => "Basic ".$basicauth,
+        "actor" => tincanlaunch_myjson_encode(
+            tincanlaunch_getactor($tincanlaunch->id)->asVersion(
+                $tincanlaunchsettings['tincanlaunchlrsversion']
+            )
         ),
+        "registration" => $registrationuuid
+    );
+    if ($cmid) {
+        $args['coursemoduleid'] = $cmid;
+    }
+    $rtnstring = $tincanlaunch->tincanlaunchurl."?".http_build_query(
+        $args,
         '',
         '&',
         PHP_QUERY_RFC3986

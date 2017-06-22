@@ -157,6 +157,6 @@ if ($lrsrespond != 204) {
 }
 
 // Launch the experience.
-header("Location: ". tincanlaunch_get_launch_url($registrationid));
+header("Location: ". tincanlaunch_get_launch_url($registrationid, $cm->id));
 
 exit;
