@@ -482,9 +482,7 @@ function tincanlaunch_get_completion_state($course, $cm, $userid, $type) {
     global $CFG, $DB;
     $result = $type; // Default return value.
 
-    // Set the timecompleted on this if it had not been set yet 
-    tincanlaunch_set_timecompleted($course, $cm, $userid);
-
+    
     // Get tincanlaunch.
     if (!$tincanlaunch = $DB->get_record('tincanlaunch', array('id' => $cm->instance))) {
         throw new Exception("Can't find activity {$cm->instance}"); // TODO: localise this.
@@ -583,6 +581,33 @@ function tincanlaunch_set_timecompleted($course, $cm, $userid) {
     }
 }
 
+function tincanlaunch_set_session_timecompleted($cmid, $userid, $timecompleted) {
+    global $DB;
+    // Sanity check to see if record exists
+    if (!$cm = $DB->get_record('course_modules', array('id' => $cmid))) {
+        throw new Exception("Can't find course module {$cmid}"); // TODO: localise this.
+    }
+
+    // Sanity check to see if the tincanlaunch_completion record is in the table
+    // at all
+    if (!$tincanlaunch_completion = $DB->get_record('course_modules_completion', array('coursemoduleid' => $cm->id, 'userid' => $userid))) {
+        throw new Exception("Can't find completion for activity {$cm->id}");
+    }
+
+    // First check if timecompleted for this record already exists. If so, do
+    // nothing
+    if ($tincanlaunch_completion->timecompleted) {
+        return false;
+    }
+    
+    // Update the timecompleted otherwise
+    $tincanlaunch_completion->timecompleted = $timecompleted;
+    if (!$DB->update_record('course_modules_completion', $tincanlaunch_completion)) {
+        throw new Exception("Could not update record for timecomplete for course module {$cm->id}");
+    }
+    return true;
+}
+
 // Set timestarted on the row in the database. If the timestarted is already set, then do nothing
 function tincanlaunch_set_timestarted($course, $cm, $userid) {
     error_log("We're looking at timestarted for user $userid");
@@ -614,7 +639,7 @@ function tincanlaunch_set_timestarted($course, $cm, $userid) {
             'viewed' => 1,
             'timestarted' => $current_time,
             'timemodified' => $current_time,
-            'timecompleted' => ''
+            'timecompleted' => NULL
         );
         $DB->insert_record('course_modules_completion', $data);
 
