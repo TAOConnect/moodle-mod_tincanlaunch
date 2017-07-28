@@ -601,6 +601,7 @@ function tincanlaunch_set_session_timecompleted($cmid, $userid, $timecompleted) 
     }
     
     // Update the timecompleted otherwise
+    $tincanlaunch_completion->completionstate = 1;
     $tincanlaunch_completion->timecompleted = $timecompleted;
     if (!$DB->update_record('course_modules_completion', $tincanlaunch_completion)) {
         throw new Exception("Could not update record for timecomplete for course module {$cm->id}");
