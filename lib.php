@@ -39,8 +39,6 @@ require_once("$CFG->dirroot/mod/tincanlaunch/WatershedPHP/watershed.php");
 // SCORM library from the SCORM module. Required for its xml2Array class by tincanlaunch_process_new_package.
 require_once("$CFG->dirroot/mod/scorm/datamodels/scormlib.php");
 
-require_once("$CFG->dirroot/vendor/autoload.php");
-
 global $tincanlaunchsettings;
 $tincanlaunchsettings = null;
 
@@ -477,7 +475,6 @@ function tincanlaunch_extend_settings_navigation(settings_navigation $settingsna
 
 // Called by Moodle core.
 function tincanlaunch_get_completion_state($course, $cm, $userid, $type) {
-    error_log("We're looking at get_completion_state for user $userid");
 
     global $CFG, $DB;
     $result = $type; // Default return value.
