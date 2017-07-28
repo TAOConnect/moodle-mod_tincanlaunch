@@ -83,7 +83,6 @@ if ($tincanlaunch->intro) { // Conditions to show the intro can change to look f
                 </div>\
             ');
         }
-//       $('#tincanlaunch_attemptprogress').load('completion_check.php?id=<?php //echo $id ?>&n=<?php// echo $n ?>'); //to avoid update on launch
     }
 
     // TODO: there may be a better way to check completion. Out of scope for current project.
@@ -121,7 +120,6 @@ echo "<h1>$tincanlaunch->name</h1>";
 
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);
-//    print_r($registrationdatafromlrs);die;
     if ($tincanlaunch->tincanmultipleregs) {
         echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
             .$registrationid
