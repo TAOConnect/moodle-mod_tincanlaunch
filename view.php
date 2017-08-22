@@ -86,11 +86,11 @@ if ($tincanlaunch->intro) { // Conditions to show the intro can change to look f
     }
 
     // TODO: there may be a better way to check completion. Out of scope for current project.
-    $(document).ready(function() {
-        setInterval(function() { 
-            $('#tincanlaunch_attemptprogress').load('completion_check.php?id=<?php echo $id ?>&n=<?php echo $n ?>');
-        }, 30000); // TODO: make this interval a configuration setting.
-    });
+    // $(document).ready(function() {
+    //     setInterval(function() { 
+    //         $('#tincanlaunch_attemptprogress').load('completion_check.php?id=<?php echo $id ?>&n=<?php echo $n ?>');
+    //     }, 30000); // TODO: make this interval a configuration setting.
+    // });
 </script>
 <?php
 
