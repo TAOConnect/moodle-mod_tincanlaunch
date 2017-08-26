@@ -1019,6 +1019,35 @@ function tincanlaunch_settings($instance) {
 }
 
 /**
+ * Returns the global LRS settings
+ *
+ * @package  mod_tincanlaunch
+ * @category tincan
+ * @param string $instance The Moodle id for the Tin Can module instance.
+ * @return array LRS settings to use
+ */
+function global_tincanlaunch_settings() {
+    global $DB, $CFG, $tincanlaunchsettings;
+
+    if (!is_null($tincanlaunchsettings)) {
+        return $tincanlaunchsettings;
+    }
+
+    $expresult = array();
+
+    // If global settings are not used, retrieve activity settings.
+    $result = $DB->get_records('config_plugins', array('plugin' => 'tincanlaunch'));
+    foreach ($result as $value) {
+        $expresult[$value->name] = $value->value;
+    }
+
+    $expresult['tincanlaunchlrsversion'] = '1.0.0';
+
+    $tincanlaunchsettings = $expresult;
+    return $expresult;
+}
+
+/**
  * Should the global LRS settings be used instead of the instance specific ones?
  *
  * @package  mod_tincanlaunch
