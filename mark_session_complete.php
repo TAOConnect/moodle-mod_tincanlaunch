@@ -28,9 +28,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once('../../config.php');
-
+//require_once("$CFG->dirroot/lib/moodlelib.php");
+require_once("$CFG->dirroot/lib/modinfolib.php");
 require_once("$CFG->dirroot/mod/tincanlaunch/lib.php");
-
+global $COURSE;
 $userid = required_param('userid', PARAM_INT);
 $coursemoduleid = required_param('coursemoduleid', PARAM_RAW);
 $timecompleted = required_param('timecompleted', PARAM_INT);
@@ -51,4 +52,7 @@ try {
     $response['error'] = $failed_message;
 }
 
+//rebuild_course_cache(122, true);
+//rebuild_course_cache($COURSE->id,true);
+rebuild_course_cache();
 exit(json_encode($response));
