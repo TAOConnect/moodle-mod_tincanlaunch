@@ -52,7 +52,12 @@ try {
     $response['error'] = $failed_message;
 }
 
-//rebuild_course_cache(122, true);
-//rebuild_course_cache($COURSE->id,true);
-rebuild_course_cache();
-exit(json_encode($response));
+echo json_encode($response);
+ignore_user_abort(true);
+header("Content-Length: 0");
+header("Connection: Close");
+flush();
+session_write_close();
+if ($updated) {
+    rebuild_course_cache();
+}
