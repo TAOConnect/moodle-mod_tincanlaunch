@@ -162,7 +162,7 @@ function configInteractiveID($interactiveType, $courseID, $slideTitle) {
     //CHECK IF SUBTITLE EXISTS
     $subStr1 = substr($courseID, 0, strrpos($courseID, "/"));//STRIPS OFF STRING AFTER LAST "/"
     $subStr2 = substr($subStr1, strrpos($subStr1, "/") + 1);//THE STRING BETWEEN LAST TWO "/"
-    if(subtr($subStr2, 0, 1) == "s" && is_numeric(substr($subStr2, 1))){
+    if(substr($subStr2, 0, 1) == "s" && is_numeric(substr($subStr2, 1))){
     	//IF 's#' IS THE STRING BETWEEN THE LAST TWO "/", IT HAS A SUBTITLE
     	//STRIPPED OFF SUBTITLE
     	$interactiveID = $subStr1;
