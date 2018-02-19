@@ -34,11 +34,13 @@ function generateStatements($idata) {
     );
     //=================================================//
     //=================================================// GENERATE STATEMENTS
-    $idata->interactiveid = configInteractiveID($idata->interactive, $idata->courseid, $idata->slidetitle);
+    if(!isset($idata->interactiveid)){$idata->interactiveid = configInteractiveID($idata->interactive, $idata->courseid, $idata->slidetitle);}//CONFIGS IF NOT SET
     $totalQuestions = count($idata->questions);
     $statements = array(); //ARRAY OF TOTAL STATEMENTS THAT NEED TO BE SENT
 
     for ($i = 0; $i < $totalQuestions; $i++) {
+        $idata->questions[$i] = cleanString($idata->questions[$i]);
+        $idata->answers[$i] = cleanString($idata->answers[$i]);
         $statement = new TinCan\Statement(
             array(
                 'actor' => array(
@@ -185,7 +187,9 @@ function configInteractiveID($interactiveType, $courseID, $slideTitle) {
     }
 
     //CONFIG SLIDE TITLE
+    $slideTitle = preg_replace("/[—]/i", " ", $slideTitle);//REPLACE EM-DASH WITH A SPACE (OTHERWISE, IT'LL COMBINE WORDS)
     $slideTitle = preg_replace("/[^a-z0-9 ]/i", "", $slideTitle);
+    $slideTitle = preg_replace("#\s+#", " ", $slideTitle);//REMOVES EXCESS WHITE SPACES
     $slideTitle = preg_replace("/[ ]/i", "-", $slideTitle);
     $slideTitle = strtolower($slideTitle);
 
@@ -194,4 +198,12 @@ function configInteractiveID($interactiveType, $courseID, $slideTitle) {
     $interactiveID .= "/$slideTitle";
 
     return $interactiveID;
+}
+
+function cleanString($str){
+    //REMOVE EXCESS TEXT FROM QUESTIONS; <br>, EXCESS WHITE SPACES, CARRIAGE RETURNS & NEW LINES
+    $str = str_replace(array("</br>", "<br>"), "", $str);//REMOVES LINE BREAKS
+    $str = preg_replace("#\s+#", " ", $str);//REMOVES EXCESS WHITE SPACES
+    $str = preg_replace("/\r|\n/", "", $str);//REMOVES CARRIAGE RETURNS & NEW LINES
+    return $str;
 }
