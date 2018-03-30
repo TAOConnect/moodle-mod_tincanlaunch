@@ -179,7 +179,7 @@ function configInteractiveID($interactiveType, $courseID, $slideTitle) {
     if ($type == 'notecards') {
         $id = 'free-response-notecards';
     }
-    elseif ($type == 'slider' || $type == 'list' || $type == 'table') {
+    elseif ($type == 'slider' || $type == 'list' || $type == 'table' || $type == 'corkboard') {
         $id = preg_replace("/[ ]/i", "-", $type); //IF ANY SPACES IN TYPE, REPLACE WITH '-'
     }
     elseif ($type == 'combination') {
