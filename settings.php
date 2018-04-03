@@ -32,6 +32,11 @@ if ($ADMIN->fulltree) {
         get_string('tincanlaunchlrsendpoint_help', 'tincanlaunch'),
         get_string('tincanlaunchlrsendpoint_default', 'tincanlaunch'), PARAM_URL));
 
+    $settings->add(new admin_setting_configtext_mod_tincanlaunch('tincanlaunch/tincanlaunchlrsproxy',
+        get_string('tincanlaunchlrsproxy', 'tincanlaunch'),
+        get_string('tincanlaunchlrsproxy_help', 'tincanlaunch'),
+        get_string('tincanlaunchlrsproxy_default', 'tincanlaunch'), PARAM_URL));
+
     $options = array(
         1 => get_string('tincanlaunchlrsauthentication_option_0', 'tincanlaunch'),
         2 => get_string('tincanlaunchlrsauthentication_option_1', 'tincanlaunch'),

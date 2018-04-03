@@ -46,6 +46,11 @@ class admin_setting_configtext_mod_tincanlaunch extends admin_setting_configtext
         if ($this->name == 'tincanlaunchlrsendpoint') {
             $data = rtrim($data, '/') . '/';
         }
+
+        // Make sure there is always a trailing slash on endpoint URLs.
+        if ($this->name == 'tincanlaunchlrsproxy') {
+            $data = rtrim($data, '/') . '/';
+        }
         return ($this->config_write($this->name, $data) ? '' : get_string('errorsetting', 'admin'));
     }
 }

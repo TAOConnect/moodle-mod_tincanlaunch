@@ -40,6 +40,10 @@ $string['tincanlaunchlrsendpoint'] = 'Endpoint';
 $string['tincanlaunchlrsendpoint_help'] = 'The LRS endpoint (e.g. http://lrs.example.com/endpoint/). Must include trailing forward slash.';
 $string['tincanlaunchlrsendpoint_default'] = '';
 
+$string['tincanlaunchlrsproxy'] = 'Proxy';
+$string['tincanlaunchlrsproxy_help'] = 'The LRS proxy to route the traffic through. Must include trailing forward slash.';
+$string['tincanlaunchlrsproxy_default'] = '';
+
 $string['tincanlaunchlrslogin'] = 'Basic Login';
 $string['tincanlaunchlrslogin_help'] = 'Your LRS login key.';
 $string['tincanlaunchlrslogin_default'] = '';
