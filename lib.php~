@@ -1059,9 +1059,8 @@ function use_global_lrs_settings($instance) {
     global $DB;
     // Determine if there is a row in tincanlaunch_lrs matching the current activity id.
     $activitysettings = $DB->get_record('tincanlaunch', array('id' => $instance));
-    if ($activitysettings==null) return true;
     if ($activitysettings->overridedefaults == 1) {
-	return false;
+        return false;
     }
     return true;
 }
