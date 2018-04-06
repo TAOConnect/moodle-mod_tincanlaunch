@@ -131,7 +131,7 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
     $xapiduration = $tincanlaunchsettings['tincanlaunchlrsduration'];
     $expiry->add(new DateInterval('PT'.$xapiduration.'M'));
 
-    $url = trim($tincanlaunchsettings['tincanlaunchlrsproxy'])."redir.php";
+    $url = trim($tincanlaunchsettings['tincanlaunchlrsproxy']);
 
     // Call the function to get the credentials from the LRS.
     $basiclogin = trim($tincanlaunchsettings['tincanlaunchlrslogin']);

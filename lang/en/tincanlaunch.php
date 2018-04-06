@@ -41,7 +41,7 @@ $string['tincanlaunchlrsendpoint_help'] = 'The LRS endpoint (e.g. http://lrs.exa
 $string['tincanlaunchlrsendpoint_default'] = '';
 
 $string['tincanlaunchlrsproxy'] = 'Proxy';
-$string['tincanlaunchlrsproxy_help'] = 'The LRS proxy to route the traffic through. Must include trailing forward slash.';
+$string['tincanlaunchlrsproxy_help'] = 'The LRS proxy to route the traffic through.';
 $string['tincanlaunchlrsproxy_default'] = '';
 
 $string['tincanlaunchlrslogin'] = 'Basic Login';
