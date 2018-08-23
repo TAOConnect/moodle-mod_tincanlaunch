@@ -121,7 +121,7 @@ echo "<h1>$tincanlaunch->name</h1>";
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);
     if ($tincanlaunch->tincanmultipleregs) {
-        echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
+        echo "<p id='tincanlaunch_newattempt'><h3><a href=\"#\" onclick=\"mod_tincanlaunch_launchexperience('"
             .$registrationid
             ."')\" style=\"cursor: pointer;\">"
             .get_string('tincanlaunch_attempt', 'tincanlaunch')
@@ -136,7 +136,7 @@ if ($lrsrespond == 200) {
 
         array_push(
             $registrationdatafromlrs[$key],
-            "<a onclick=\"mod_tincanlaunch_launchexperience('$key')\" style='cursor: pointer;'>"
+            "<a href=\"#\" onclick=\"mod_tincanlaunch_launchexperience('$key')\" style='cursor: pointer;'>"
             .get_string('tincanlaunchviewlaunchlink', 'tincanlaunch')."</a>"
         );
         $registrationdatafromlrs[$key]['created'] = convert_utc_to_localtime(
@@ -162,7 +162,7 @@ if ($lrsrespond == 200) {
     $table->data = $registrationdatafromlrs;
     echo html_writer::table($table);
 } else {
-    echo "<p id='tincanlaunch_newattempt'><h3><a onclick=\"mod_tincanlaunch_launchexperience('"
+    echo "<p id='tincanlaunch_newattempt'><h3><a href=\"#\"onclick=\"mod_tincanlaunch_launchexperience('"
         .$registrationid
         ."')\" style=\"cursor: pointer;\">"
         .get_string('tincanlaunch_attempt', 'tincanlaunch')
