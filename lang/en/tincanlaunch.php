@@ -121,8 +121,8 @@ $string['completionverbgroup_help'] = 'Moodle will look for statements where the
 // View settings.
 $string['tincanlaunchviewfirstlaunched'] = 'First launched';
 $string['tincanlaunchviewlastlaunched'] = 'Last launched';
-$string['tincanlaunchviewlaunchlinkheader'] = 'Launch link';
-$string['tincanlaunchviewlaunchlink'] = 'launch';
+$string['tincanlaunchviewlaunchlinkheader'] = 'Resume link';
+$string['tincanlaunchviewlaunchlink'] = 'Resume this session';
 
 $string['tincanlaunch_completed'] = 'Experience complete!';
 $string['tincanlaunch_progress'] = 'Attempt in progress.';

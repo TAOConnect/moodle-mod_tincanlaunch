@@ -133,18 +133,23 @@ if ($lrsrespond == 200) {
             $reason = "Excepted array, found ". $registrationdatafromlrs[$key];
             throw new moodle_exception($reason, 'tincanlaunch', '', $warnings[$reason]);
         }
+
         array_push(
             $registrationdatafromlrs[$key],
             "<a onclick=\"mod_tincanlaunch_launchexperience('$key')\" style='cursor: pointer;'>"
             .get_string('tincanlaunchviewlaunchlink', 'tincanlaunch')."</a>"
         );
-        $registrationdatafromlrs[$key]['created'] = date_format(
-            date_create($registrationdatafromlrs[$key]['created']),
-            'D, d M Y H:i:s'
+        $registrationdatafromlrs[$key]['created'] = convert_utc_to_localtime(
+            date_format(
+                date_create($registrationdatafromlrs[$key]['created']),
+                'D, d M Y H:i:s'
+            )
         );
-        $registrationdatafromlrs[$key]['lastlaunched'] = date_format(
-            date_create($registrationdatafromlrs[$key]['lastlaunched']),
-            'D, d M Y H:i:s'
+        $registrationdatafromlrs[$key]['lastlaunched'] = convert_utc_to_localtime(
+            date_format(
+                date_create($registrationdatafromlrs[$key]['lastlaunched']),
+                'D, d M Y H:i:s'
+            )
         );
     }
     $table = new html_table();

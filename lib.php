@@ -1065,3 +1065,18 @@ function use_global_lrs_settings($instance) {
     }
     return true;
 }
+
+function convert_utc_to_localtime($time, $timezone) {
+	$user_timezone = get_user_timezone($timezone);
+	if (empty($user_timezone)) {
+		return $time;
+	}   
+	$user_datetimezone = new DateTimeZone($user_timezone);
+	$utc_datetimezone = new DateTimeZone('UTC');
+	$current_datetime = new DateTime($time, $utc_datetimezone);
+	$offset = $user_datetimezone->getOffset($current_datetime);
+	$interval = DateInterval::createFromDateString((string) $offset . 'seconds');
+	$current_datetime->add($interval);
+		
+	return $current_datetime->format('M jS, g:i A');
+} 
