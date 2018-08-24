@@ -127,6 +127,7 @@ if ($lrsrespond == 200) {
             .get_string('tincanlaunch_attempt', 'tincanlaunch')
             ."</a></h3></p>";
     }
+    $user_timezone = $USER->timezone;
     foreach ($registrationdatafromlrs as $key => $item) {
 
         if (!is_array($registrationdatafromlrs[$key])) {
@@ -143,13 +144,15 @@ if ($lrsrespond == 200) {
             date_format(
                 date_create($registrationdatafromlrs[$key]['created']),
                 'D, d M Y H:i:s'
-            )
+            ),
+            $user_timezone
         );
         $registrationdatafromlrs[$key]['lastlaunched'] = convert_utc_to_localtime(
             date_format(
                 date_create($registrationdatafromlrs[$key]['lastlaunched']),
                 'D, d M Y H:i:s'
-            )
+            ),
+            $user_timezone
         );
     }
     $table = new html_table();
