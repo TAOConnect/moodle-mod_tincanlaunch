@@ -126,7 +126,7 @@ function tincan_launched_statement($registrationid) {
  * @return string launch link including querystring.
  */
 function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
-    global $tincanlaunch, $CFG;
+    global $tincanlaunch, $CFG, $USER, $DB;
     $tincanlaunchsettings = tincanlaunch_settings($tincanlaunch->id);
     $expiry = new DateTime('NOW');
     $xapiduration = $tincanlaunchsettings['tincanlaunchlrsduration'];
@@ -190,7 +190,6 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
 		$environment = 'desktop';
 	}
 
-	global $USER;
 	$conditionparams = array('coursemoduleid' => $cm->id, 'lang' => strtolower($USER->lang), 'environment' => $environment);
 	$tincanlaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
 	if (!empty($tincanlaunchurl)) {

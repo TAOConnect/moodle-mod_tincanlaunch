@@ -475,7 +475,7 @@ function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forc
     $fs = get_file_storage();
 
     if (
-        !$file = $fs->get_file($context->id, 'mod_tincanlaunch', 'content', 0, '/'.$filepath.'/', $filename)
+        !$file = $fs->get_file($context->id, 'mod_tincanlaunch', $filearea, 0, '/'.$filepath.'/', $filename)
         or $file->is_directory()
     ) {
         if ($filearea === 'content') { // Return file not found straight away to improve performance.

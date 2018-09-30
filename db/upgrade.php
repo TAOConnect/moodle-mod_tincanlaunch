@@ -50,7 +50,8 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
         $tincanlaunch_urls->add_field('tincanlaunchid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $tincanlaunch_urls->add_field('coursemoduleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, null);
         $tincanlaunch_urls->add_field('lang', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, '', null);
-        $tincanlaunch_urls->add_field('environment', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', null);
+        $tincanlaunch_urls->add_field('environment', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, '', null);
+        $tincanlaunch_urls->add_field('tincanlaunchurl', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', null);
 
         // key and foreign key constraints
         $tincanlaunch_urls->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
