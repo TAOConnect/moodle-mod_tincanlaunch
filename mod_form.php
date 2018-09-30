@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,10 +25,10 @@
  * @copyright  2013 Andrew Downes
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once("mobile_detect.php");
 
 /**
  * Module instance settings form
@@ -41,7 +42,6 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         global $CFG;
         $cfgtincanlaunch = get_config('tincanlaunch');
-
         $mform = $this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.
@@ -63,20 +63,11 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'packageheading', get_string('tincanpackagetitle', 'tincanlaunch'));
         $mform->addElement(
-            'static',
-            'packagesettingsdescription',
-            get_string('tincanpackagetitle', 'tincanlaunch'),
-            get_string('tincanpackagetext', 'tincanlaunch')
+                'static', 'packagesettingsdescription', get_string('tincanpackagetitle', 'tincanlaunch'), get_string('tincanpackagetext', 'tincanlaunch')
         );
 
-        // Start required Fields for Activity.
-        $mform->addElement('text', 'tincanlaunchurl', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
-        $mform->setType('tincanlaunchurl', PARAM_TEXT);
-        $mform->addRule('tincanlaunchurl', null, 'required', null, 'client');
-        $mform->addRule('tincanlaunchurl', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('tincanlaunchurl', 'tincanlaunchurl', 'tincanlaunch');
-        $mform->setDefault('tincanlaunchurl', 'https://example.com/example-activity/index.html');
 
+        // Start required Fields for Activity.
         $mform->addElement('text', 'tincanactivityid', get_string('tincanactivityid', 'tincanlaunch'), array('size' => '64'));
         $mform->setType('tincanactivityid', PARAM_TEXT);
         $mform->addRule('tincanactivityid', null, 'required', null, 'client');
@@ -85,7 +76,18 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         $mform->setDefault('tincanactivityid', 'https://example.com/example-activity');
         // End required Fields for Activity.
 
-        // New local package upload.
+        $mform->addElement('html', html_writer::tag('label',get_string('english_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px')));
+          // Start required Fields for launchurl.
+        $mform->addElement('hidden', 'lang_1', 'en');
+        $mform->addElement('hidden', 'environment_1', 'desktop');
+        $mform->addElement('text', 'tincanlaunchurl_1', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
+        $mform->setType('tincanlaunchurl_1', PARAM_TEXT);
+        $mform->addRule('tincanlaunchurl_1', null, 'required', null, 'client');
+        $mform->addRule('tincanlaunchurl_1', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addHelpButton('tincanlaunchurl_1', 'tincanlaunchurl', 'tincanlaunch');
+        $mform->setDefault('tincanlaunchurl_1', 'https://example.com/example-activity/index.html');
+    
+       //New local package  upload for enlish desktop.
 
         $filemanageroptions = array();
         $filemanageroptions['accepted_types'] = array('.zip');
@@ -94,35 +96,104 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         $filemanageroptions['subdirs'] = 0;
 
         $mform->addElement(
-            'filemanager',
-            'packagefile',
-            get_string('tincanpackage',
-            'tincanlaunch'),
-            null,
-            $filemanageroptions
+                'filemanager', 'packagefile_1', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
         );
-        $mform->addHelpButton('packagefile', 'tincanpackage', 'tincanlaunch');
+        $mform->addHelpButton('packagefile_1', 'tincanpackage', 'tincanlaunch');
 
+        
+        //section for mobile starts here    
+        $mform->addElement('html', html_writer::tag('label',get_string('english_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
+        $mform->addElement('hidden', 'lang_2', 'en');
+        $mform->addElement('hidden', 'environment_2', 'mobile');
+        // Start required Fields for launchurl.
+        $mform->addElement('text', 'tincanlaunchurl_2', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
+        $mform->setType('tincanlaunchurl_2', PARAM_TEXT);
+        $mform->addRule('tincanlaunchurl_2', null, 'required', null, 'client');
+        $mform->addRule('tincanlaunchurl_2', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addHelpButton('tincanlaunchurl_2', 'tincanlaunchurl', 'tincanlaunch');
+        $mform->setDefault('tincanlaunchurl_2', 'https://example.com/example-activity/index.html');
+    
+        // New local package for mobile upload.
+        $filemanageroptions = array();
+        $filemanageroptions['accepted_types'] = array('.zip');
+        $filemanageroptions['maxbytes'] = 0;
+        $filemanageroptions['maxfiles'] = 1;
+        $filemanageroptions['subdirs'] = 0;
+
+        $mform->addElement(
+                'filemanager', 'packagefile_2', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
+        );
+        $mform->addHelpButton('packagefile_2', 'tincanpackage', 'tincanlaunch');
+        
+        //section for french desktop starts here.
+         $mform->addElement('html', html_writer::tag('label',get_string('french_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
+        $mform->addElement('hidden', 'lang_3', 'fr');
+        $mform->addElement('hidden', 'environment_3', 'desktop');
+        // Start required Fields for launchurl.
+        $mform->addElement('text', 'tincanlaunchurl_3', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
+        $mform->setType('tincanlaunchurl_3', PARAM_TEXT);
+        $mform->addRule('tincanlaunchurl_3', null, 'required', null, 'client');
+        $mform->addRule('tincanlaunchurl_3', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addHelpButton('tincanlaunchurl_3', 'tincanlaunchurl', 'tincanlaunch');
+        $mform->setDefault('tincanlaunchurl_3', 'https://example.com/example-activity/index.html');
+    
+        // New local package for mobile upload.
+        $filemanageroptions = array();
+        $filemanageroptions['accepted_types'] = array('.zip');
+        $filemanageroptions['maxbytes'] = 0;
+        $filemanageroptions['maxfiles'] = 1;
+        $filemanageroptions['subdirs'] = 0;
+
+        $mform->addElement(
+                'filemanager', 'packagefile_3', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
+        );
+        $mform->addHelpButton('packagefile_3', 'tincanpackage', 'tincanlaunch');   
+        //section for french desktop end here
+        //  
+       //section for french mobile starts here 
+        $mform->addElement('html', html_writer::tag('label',get_string('french_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px')));
+        $mform->addElement('hidden', 'lang_4', 'fr');
+        $mform->addElement('hidden', 'environment_4', 'mobile');
+        // Start required Fields for launchurl.
+        $mform->addElement('text', 'tincanlaunchurl_4', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
+        $mform->setType('tincanlaunchurl_4', PARAM_TEXT);
+        $mform->addRule('tincanlaunchurl_4', null, 'required', null, 'client');
+        $mform->addRule('tincanlaunchurl_4', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addHelpButton('tincanlaunchurl_4', 'tincanlaunchurl', 'tincanlaunch');
+        $mform->setDefault('tincanlaunchurl_4', 'https://example.com/example-activity/index.html');
+    
+        // New local package for mobile upload.
+        $filemanageroptions = array();
+        $filemanageroptions['accepted_types'] = array('.zip');
+        $filemanageroptions['maxbytes'] = 0;
+        $filemanageroptions['maxfiles'] = 1;
+        $filemanageroptions['subdirs'] = 0;
+
+        $mform->addElement(
+                'filemanager', 'packagefile_4', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
+        );
+        $mform->addHelpButton('packagefile_4', 'tincanpackage', 'tincanlaunch'); 
+        
+      //section for french mobile end here   
+       
+        // mobile section end here
+        
         // Start advanced settings.
         $mform->addElement('header', 'lrsheading', get_string('lrsheading', 'tincanlaunch'));
 
         $mform->addElement(
-            'static',
-            'description',
-            get_string('lrsdefaults', 'tincanlaunch'),
-            get_string('lrssettingdescription', 'tincanlaunch')
+                'static', 'description', get_string('lrsdefaults', 'tincanlaunch'), get_string('lrssettingdescription', 'tincanlaunch')
         );
 
+     
+        // other content for desktops
         // Override default LRS settings.
         $mform->addElement('advcheckbox', 'overridedefaults', get_string('overridedefaults', 'tincanlaunch'));
         $mform->addHelpButton('overridedefaults', 'overridedefaults', 'tincanlaunch');
 
         // Add LRS endpoint.
         $mform->addElement(
-            'text',
-            'tincanlaunchlrsendpoint',
-            get_string('tincanlaunchlrsendpoint', 'tincanlaunch'),
-            array('size' => '64')
+                'text', 'tincanlaunchlrsendpoint', get_string('tincanlaunchlrsendpoint', 'tincanlaunch'), array('size' => '64')
         );
         $mform->setType('tincanlaunchlrsendpoint', PARAM_TEXT);
         $mform->addRule('tincanlaunchlrsendpoint', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -137,28 +208,19 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             0 => get_string('tincanlaunchlrsauthentication_option_2', 'tincanlaunch')
         );
         $mform->addElement(
-            'select',
-            'tincanlaunchlrsauthentication',
-            get_string('tincanlaunchlrsauthentication', 'tincanlaunch'),
-            $authoptions
+                'select', 'tincanlaunchlrsauthentication', get_string('tincanlaunchlrsauthentication', 'tincanlaunch'), $authoptions
         );
         $mform->disabledIf('tincanlaunchlrsauthentication', 'overridedefaults');
         $mform->addHelpButton('tincanlaunchlrsauthentication', 'tincanlaunchlrsauthentication', 'tincanlaunch');
         $mform->getElement('tincanlaunchlrsauthentication')->setSelected($cfgtincanlaunch->tincanlaunchlrsauthentication);
 
         $mform->addElement(
-            'static',
-            'description',
-            get_string('tincanlaunchlrsauthentication_watershedhelp_label', 'tincanlaunch'),
-            get_string('tincanlaunchlrsauthentication_watershedhelp', 'tincanlaunch')
+                'static', 'description', get_string('tincanlaunchlrsauthentication_watershedhelp_label', 'tincanlaunch'), get_string('tincanlaunchlrsauthentication_watershedhelp', 'tincanlaunch')
         );
 
         // Add basic authorisation login.
         $mform->addElement(
-            'text',
-            'tincanlaunchlrslogin',
-            get_string('tincanlaunchlrslogin', 'tincanlaunch'),
-            array('size' => '64')
+                'text', 'tincanlaunchlrslogin', get_string('tincanlaunchlrslogin', 'tincanlaunch'), array('size' => '64')
         );
         $mform->setType('tincanlaunchlrslogin', PARAM_TEXT);
         $mform->addRule('tincanlaunchlrslogin', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -168,10 +230,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         // Add basic authorisation pass.
         $mform->addElement(
-            'password',
-            'tincanlaunchlrspass',
-            get_string('tincanlaunchlrspass', 'tincanlaunch'),
-            array('size' => '64')
+                'password', 'tincanlaunchlrspass', get_string('tincanlaunchlrspass', 'tincanlaunch'), array('size' => '64')
         );
         $mform->setType('tincanlaunchlrspass', PARAM_TEXT);
         $mform->addRule('tincanlaunchlrspass', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -186,10 +245,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         // Duration.
         $mform->addElement(
-            'text',
-            'tincanlaunchlrsduration',
-            get_string('tincanlaunchlrsduration', 'tincanlaunch'),
-            array('size' => '64')
+                'text', 'tincanlaunchlrsduration', get_string('tincanlaunchlrsduration', 'tincanlaunch'), array('size' => '64')
         );
         $mform->setType('tincanlaunchlrsduration', PARAM_TEXT);
         $mform->addRule('tincanlaunchlrsduration', get_string('maximumchars', '', 5), 'maxlength', 5, 'client');
@@ -199,10 +255,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         // Actor account homePage.
         $mform->addElement(
-            'text',
-            'tincanlaunchcustomacchp',
-            get_string('tincanlaunchcustomacchp', 'tincanlaunch'),
-            array('size' => '64')
+                'text', 'tincanlaunchcustomacchp', get_string('tincanlaunchcustomacchp', 'tincanlaunch'), array('size' => '64')
         );
         $mform->setType('tincanlaunchcustomacchp', PARAM_TEXT);
         $mform->addRule('tincanlaunchcustomacchp', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -212,15 +265,12 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         // Don't use email.
         $mform->addElement(
-            'advcheckbox',
-            'tincanlaunchuseactoremail',
-            get_string('tincanlaunchuseactoremail', 'tincanlaunch')
+                'advcheckbox', 'tincanlaunchuseactoremail', get_string('tincanlaunchuseactoremail', 'tincanlaunch')
         );
         $mform->addHelpButton('tincanlaunchuseactoremail', 'tincanlaunchuseactoremail', 'tincanlaunch');
         $mform->setDefault('tincanlaunchuseactoremail', $cfgtincanlaunch->tincanlaunchuseactoremail);
         $mform->disabledIf('tincanlaunchuseactoremail', 'overridedefaults');
         // End advanced settings.
-
         // Behavior settings.
         $mform->addElement('header', 'behaviorheading', get_string('behaviorheading', 'tincanlaunch'));
 
@@ -236,24 +286,21 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
     }
 
     public function add_completion_rules() {
-        $mform =& $this->_form;
+        $mform = & $this->_form;
 
         $group = array();
-        $group[] =& $mform->createElement(
-            'checkbox',
-            'completionverbenabled',
-            ' ',
-            get_string('completionverb', 'tincanlaunch')
+        $group[] = & $mform->createElement(
+                        'checkbox', 'completionverbenabled', ' ', get_string('completionverb', 'tincanlaunch')
         );
-        $group[] =& $mform->createElement('text', 'tincanverbid', ' ', array('size' => '64'));
+        $group[] = & $mform->createElement('text', 'tincanverbid', ' ', array('size' => '64'));
         $mform->setType('tincanverbid', PARAM_TEXT);
 
         $mform->addGroup($group, 'completionverbgroup', get_string('completionverbgroup', 'tincanlaunch'), array(' '), false);
         $mform->addGroupRule('completionverbgroup', array(
             'tincanverbid' => array(
                 array(get_string('maximumchars', '', 255), 'maxlength', 255, 'client')
-                )
             )
+                )
         );
 
         $mform->addHelpButton('completionverbgroup', 'completionverbgroup', 'tincanlaunch');
@@ -292,10 +339,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             if ($defaultvalues['overridedefaults'] == '1') {
                 // Retrieve activity lrs settings from DB.
                 $tincanlaunchlrs = $DB->get_record(
-                    'tincanlaunch_lrs',
-                    array('tincanlaunchid' => $defaultvalues['instance']),
-                    $fields = '*',
-                    IGNORE_MISSING
+                        'tincanlaunch_lrs', array('tincanlaunchid' => $defaultvalues['instance']), $fields = '*', IGNORE_MISSING
                 );
                 $defaultvalues['tincanlaunchlrsendpoint'] = $tincanlaunchlrs->lrsendpoint;
                 $defaultvalues['tincanlaunchlrsauthentication'] = $tincanlaunchlrs->lrsauthentication;
@@ -316,12 +360,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         $draftitemid = file_get_submitted_draft_itemid('packagefile');
         file_prepare_draft_area(
-            $draftitemid,
-            $this->context->id,
-            'mod_tincanlaunch',
-            'package',
-            0,
-            array('subdirs' => 0, 'maxfiles' => 1)
+                $draftitemid, $this->context->id, 'mod_tincanlaunch', 'package', 0, array('subdirs' => 0, 'maxfiles' => 1)
         );
         $defaultvalues['packagefile'] = $draftitemid;
 
@@ -332,6 +371,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             $defaultvalues['completionverbenabled'] = 1;
         }
     }
+
     // Validate the form elements after submitting (server-side).
     public function validation($data, $files) {
         global $CFG, $USER;
@@ -340,12 +380,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             $draftitemid = file_get_submitted_draft_itemid('packagefile');
 
             file_prepare_draft_area(
-                $draftitemid,
-                $this->context->id,
-                'mod_tincanlaunch',
-                'packagefilecheck',
-                null,
-                array('subdirs' => 0, 'maxfiles' => 1)
+                    $draftitemid, $this->context->id, 'mod_tincanlaunch', 'packagefilecheck', null, array('subdirs' => 0, 'maxfiles' => 1)
             );
 
             // Get file from users draft area.
@@ -362,4 +397,5 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         }
         return $errors;
     }
+
 }

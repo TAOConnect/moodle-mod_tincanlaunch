@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -21,15 +22,14 @@
  * @copyright  2013 Andrew Downes
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 require_once('header.php');
-global $COURSE, $DB, $USER;
+global $COURSE, $DB, $USER, $CFG;
 // Trigger Activity launched event.
 
 $event = \mod_tincanlaunch\event\activity_launched::create(array(
-    'objectid' => $tincanlaunch->id,
-    'context' => $context,
-));
+            'objectid' => $tincanlaunch->id,
+            'context' => $context,
+        ));
 
 // to enter the timestarted value into course_modules_completion table
 tincanlaunch_set_timestarted($COURSE, $cm, $USER->id);
@@ -43,7 +43,7 @@ $event->trigger();
 // Get the registration id.
 $registrationid = $_GET["launchform_registration"];
 if (empty($registrationid)) {
-    echo "<div class='alert alert-error'>".get_string('tincanlaunch_regidempty', 'tincanlaunch')."</div>";
+    echo "<div class='alert alert-error'>" . get_string('tincanlaunch_regidempty', 'tincanlaunch') . "</div>";
     // Failed to connect to LRS.
     if ($CFG->debug == 32767) {
         echo "<p>Error attempting to get registration id querystring parameter.</p>";
@@ -54,9 +54,9 @@ if (empty($registrationid)) {
 // Save a record of this registration to the LRS state API.
 
 $getregistrationdatafromlrsstate = tincanlaunch_get_global_parameters_and_get_state(
-    "http://tincanapi.co.uk/stateapikeys/registrations"
+        "http://tincanapi.co.uk/stateapikeys/registrations"
 );
-$errorhtml = "<div class='alert alert-error'>".get_string('tincanlaunch_notavailable', 'tincanlaunch')."</div>";
+$errorhtml = "<div class='alert alert-error'>" . get_string('tincanlaunch_notavailable', 'tincanlaunch') . "</div>";
 $lrsrespond = $getregistrationdatafromlrsstate->httpResponse['status'];
 if ($lrsrespond != 200 && $lrsrespond != 404) {
     // Failed to connect to LRS.
@@ -105,9 +105,7 @@ uasort($registrationdata, function($a, $b) {
 // TODO: Currently this is re-PUTting all of the data - it may be better just to POST the new data.
 // This will prevent us sorting, but sorting could be done on output.
 $saveresgistrationdata = tincanlaunch_get_global_parameters_and_save_state(
-    $registrationdata,
-    "http://tincanapi.co.uk/stateapikeys/registrations",
-    $registrationdataetag
+        $registrationdata, "http://tincanapi.co.uk/stateapikeys/registrations", $registrationdataetag
 );
 $lrsrespond = $saveresgistrationdata->httpResponse['status'];
 if ($lrsrespond != 204) {
@@ -157,6 +155,39 @@ if ($lrsrespond != 204) {
 }
 
 // Launch the experience.
-header("Location: ". tincanlaunch_get_launch_url($registrationid, $cm->id));
+require_once($CFG->dirroot . '/lib/classes/useragent.php');
+$userdevice = core_useragent::get_user_device_type();
+$environment = $userdevice;
+if ($userdevice == 'default') {
+    $environment = 'desktop';
+}
+
+$conditionparams = array('coursemoduleid' => $cm->id, 'lang' => strtolower($USER->lang), 'environment' => $environment);
+$actualtincanlaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+if (!empty($actualtincanlaunchurl)) {
+    // Based on current USER land and environment (browser user agent).
+    $launchurl = $actualtincanlaunchurl;
+} else {
+    // Falling back to lang only if environment not found.
+    unset($conditionparams['environment']);
+    $onlylanglaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+    if (!empty($onlylanglaunchurl)) {
+        $launchurl = $onlylanglaunchurl;
+    } else {
+        // Falling back to USER environment + $CFG->lang (default setting for language).
+        $conditionparams['environment'] = $environment;
+        $conditionparams['lang'] = strtolower($CFG->lang);
+        $defaultlanglaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+        if (!empty($defaultlanglaunchurl)) {
+            $launchurl = $defaultlanglaunchurl;
+        } else {
+            // Final case defaulting back to EN + desktop.
+            unset($conditionparams['environment']);
+            $launchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+        }
+    }
+}
+
+header("Location: " . $launchurl . tincanlaunch_get_launch_url($registrationid, $cm->id));
 
 exit;

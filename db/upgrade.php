@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -28,7 +29,6 @@
  * @copyright  2013 Andrew Downes
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -135,7 +135,7 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2013111600, 'tincanlaunch');
     }
 
-    if ($oldversion < 2015032500) {
+   // if ($oldversion < 2015032500) {
 
         // Define field overridedefaults to be added to tincanlaunch.
         $table = new xmldb_table('tincanlaunch');
@@ -144,6 +144,18 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
         // Conditionally launch add field overridedefaults.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
+        }
+
+        // Define table tincanlaunch_urls field to be created.
+        $tincanlaunch_urls = new xmldb_table('tincanlaunch_urls');
+        
+         // Adding fields to table tincanlaunch_urls.
+        $fieldtincanlaunch = new xmldb_field('itemid', XMLDB_TYPE_INTEGER, '11', false, false, false, NULL);
+
+        if ($dbman->table_exists($tincanlaunch_urls)) {
+            if (!$dbman->field_exists($tincanlaunch_urls, $fieldtincanlaunch)) {
+                $dbman->add_field($tincanlaunch_urls, $fieldtincanlaunch);
+            }
         }
 
         // Define table tincanlaunch_lrs to be created.
@@ -171,7 +183,7 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
 
         // Tincanlaunch savepoint reached.
         upgrade_mod_savepoint(true, 2015032500, 'tincanlaunch');
-    }
+   // }
 
     if ($oldversion < 2015033100) {
 

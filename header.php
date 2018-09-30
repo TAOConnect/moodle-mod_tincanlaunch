@@ -38,7 +38,9 @@ if ($id) {
     $course     = $DB->get_record('course', array('id' => $tincanlaunch->course), '*', MUST_EXIST);
     $cm         = get_coursemodule_from_instance('tincanlaunch', $tincanlaunch->id, $course->id, false, MUST_EXIST);
 } else {
-    error(get_string('idmissing', 'report_tincan'));
+    echo html_writer::div(get_string('idmissing', 'report_tincanlaunch'), 'alert alert-danger');
+    // TODO:: to be looked for error function as it is not being defined.
+//    error(get_string('idmissing', 'tincanlaunch'));
 }
 
 require_login($course, true, $cm);
