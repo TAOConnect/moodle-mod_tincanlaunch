@@ -39,6 +39,9 @@ require_once("$CFG->dirroot/mod/tincanlaunch/WatershedPHP/watershed.php");
 // SCORM library from the SCORM module. Required for its xml2Array class by tincanlaunch_process_new_package.
 require_once("$CFG->dirroot/mod/scorm/datamodels/scormlib.php");
 
+// config for tincanlaunch
+require_once("$CFG->dirroot/mod/tincanlaunch/config.php");
+
 global $tincanlaunchsettings;
 $tincanlaunchsettings = null;
 
@@ -77,7 +80,7 @@ function tincanlaunch_supports($feature) {
  * @return int The id of the newly inserted tincanlaunch record
  */
 function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_form $mform = null) {
-    global $DB, $CFG;
+    global $DB, $CFG, $SUBCFG;
 
     $tincanlaunch->timecreated = time();
 
@@ -97,10 +100,13 @@ function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_
     }
 
     // Process uploaded file.
-    if (!empty($tincanlaunch->packagefile)) {
-        tincanlaunch_process_new_package($tincanlaunch);
+    $packagefiles = $SUBCFG->packagefiles;
+    foreach ($packagefiles as $packagefile) {
+        if (!empty($tincanlaunch->$packagefile)) {
+            tincanlaunch_process_new_package($tincanlaunch, $packagefile);
+        }
     }
-
+    
     return $tincanlaunch->id;
 }
 
@@ -116,7 +122,7 @@ function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_
  * @return boolean Success/Fail
  */
 function tincanlaunch_update_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_form $mform = null) {
-    global $DB, $CFG;
+    global $DB, $CFG, $SUBCFG;
 
     $tincanlaunch->timemodified = time();
     $tincanlaunch->id = $tincanlaunch->instance;
@@ -150,9 +156,11 @@ function tincanlaunch_update_instance(stdClass $tincanlaunch, mod_tincanlaunch_m
         return false;
     }
 
-    // Process uploaded file.
-    if (!empty($tincanlaunch->packagefile)) {
-        tincanlaunch_process_new_package($tincanlaunch);
+    $packagefiles = $SUBCFG->packagefiles;
+    foreach ($packagefiles as $packagefile) {
+        if (!empty($tincanlaunch->$packagefile)) {
+            tincanlaunch_process_new_package($tincanlaunch, $packagefile);
+        }
     }
 
     return true;
@@ -341,9 +349,16 @@ function tincanlaunch_get_extra_capabilities() {
  * @return array of [(string)filearea] => (string)description
  */
 function tincanlaunch_get_file_areas($course, $cm, $context) {
+    global $SUBCFG;
+    $packagefiles = $SUBCFG->packagefiles;
     $areas = array();
-    $areas['content'] = get_string('areacontent', 'scorm');
-    $areas['package'] = get_string('areapackage', 'scorm');
+    
+    foreach ($packagefiles as $packagefile) {
+        $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
+        $contentarea = $SUBCFG->packagefiles_contentarea[$packagefile];
+        $areas[$filearea] = get_string($filearea, 'tincanlaunch');
+        $areas[$contentarea] = get_string($contentarea, 'tincanlaunch');
+    }
     return $areas;
 }
 
@@ -365,7 +380,7 @@ function tincanlaunch_get_file_areas($course, $cm, $context) {
  * @return file_info instance or null if not found
  */
 function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
-    global $CFG;
+    global $CFG, $SUBCFG;
 
     if (!has_capability('moodle/course:managefiles', $context)) {
         return null;
@@ -373,14 +388,15 @@ function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $f
 
     $fs = get_file_storage();
 
-    if ($filearea === 'package') {
+    $packagefiles = array_values($SUBCFG->packagefiles_filearea);
+    if (in_array($filearea, $packagefiles)) {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
 
         $urlbase = $CFG->wwwroot.'/pluginfile.php';
-        if (!$storedfile = $fs->get_file($context->id, 'mod_tincanlaunch', 'package', 0, $filepath, $filename)) {
+        if (!$storedfile = $fs->get_file($context->id, 'mod_tincanlaunch', $filearea, 0, $filepath, $filename)) {
             if ($filepath === '/' and $filename === '.') {
-                $storedfile = new virtual_root_file($context->id, 'mod_tincanlaunch', 'package', 0);
+                $storedfile = new virtual_root_file($context->id, 'mod_tincanlaunch', $filearea, 0);
             } else {
                 // Not found.
                 return null;
@@ -407,84 +423,37 @@ function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $f
  * @return bool false if file not found, does not return if found - just send the file
  */
 function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
-    global $CFG, $DB;
-
+    global $CFG, $DB, $SUBCFG;
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
-
     require_login($course, true, $cm);
     $canmanageactivity = has_capability('moodle/course:manageactivities', $context);
+    $filename = array_pop($args);
+    $filepath = implode('/', $args);
 
-    switch ($filearea) {
-        case 'content':
-            $filename = array_pop($args);
-            $filepath = implode('/', $args);
-            $lifetime = null;
-            break;
-        case 'package':
-            $relativepath = implode('/', $args);
-            $fullpath = "/$context->id/tincanlaunch/package/0/$relativepath";
-            $lifetime = 0; // No caching here.
-            break;
-        case 'content_en_desktop':
-            $filename = array_pop($args);
-            $filepath = implode('/', $args);
-            $lifetime = null;
-            break;
-        case 'package_en_desktop':
-            $relativepath = implode('/', $args);
-            $fullpath = "/$context->id/tincanlaunch/package_en_desktop/0/$relativepath";
-            $lifetime = 0; // No caching here.
-            break;
-        case 'content_en_mobile':
-            $filename = array_pop($args);
-            $filepath = implode('/', $args);
-            $lifetime = null;
-            break;
-        case 'package_en_mobile':
-            $relativepath = implode('/', $args);
-            $fullpath = "/$context->id/tincanlaunch/package_en_mobile/0/$relativepath";
-            $lifetime = 0; // No caching here.
-            break;
-        case 'content_fr_desktop':
-            $filename = array_pop($args);
-            $filepath = implode('/', $args);
-            $lifetime = null;
-            break;
-        case 'package_fr_desktop':
-            $relativepath = implode('/', $args);
-            $fullpath = "/$context->id/tincanlaunch/package_fr_desktop/0/$relativepath";
-            $lifetime = 0; // No caching here.
-            break;
-        case 'content_fr_mobile':
-            $filename = array_pop($args);
-            $filepath = implode('/', $args);
-            $lifetime = null;
-            break;
-        case 'package_fr_mobile':
-            $relativepath = implode('/', $args);
-            $fullpath = "/$context->id/tincanlaunch/package_en_desktop/0/$relativepath";
-            $lifetime = 0; // No caching here.
-            break;
-        default:
-            return false;
-            break;
+    // get potential fileareas and content areas
+    $fileareas = array_values($SUBCFG->packagefiles_filearea);
+    $contentareas = array_values($SUBCFG->packagefiles_contentarea);
+
+    if (in_array($filearea, $contentareas)) {
+        $lifetime = null;
+    } else if (in_array($filearea, $fileareas)) {
+        $lifetime = 0; // No caching here.
+    } else {
+        return false;
     }
-
     $fs = get_file_storage();
-
     if (
         !$file = $fs->get_file($context->id, 'mod_tincanlaunch', $filearea, 0, '/'.$filepath.'/', $filename)
         or $file->is_directory()
     ) {
-        if ($filearea === 'content') { // Return file not found straight away to improve performance.
+        if (in_array($filearea, $contentareas)) { // Return file not found straight away to improve performance.
             send_header_404();
             die;
         }
         return false;
     }
-
     // Finally send the file.
     send_stored_file($file, $lifetime, 0, false, $options);
 }
@@ -583,7 +552,6 @@ function tincanlaunch_set_session_timecompleted($cmid, $userid, $timecompleted) 
 
 // Set timestarted on the row in the database. If the timestarted is already set, then do nothing
 function tincanlaunch_set_timestarted($course, $cm, $userid) {
-    error_log("We're looking at timestarted for user $userid");
     global $CFG, $DB;
 
     // Get tincanlaunch.
@@ -625,7 +593,6 @@ function tincanlaunch_set_timestarted($course, $cm, $userid) {
 
 // Set lastaccess value on the row in the database.
 function tincanlaunch_set_lastaccess($course, $cm, $userid) {
-    error_log("We're looking at lastaccess for user $userid");
     global $CFG, $DB;
 
     // Get tincanlaunch.
@@ -660,28 +627,31 @@ It looks like the standard Quiz module does that same thing, so I don't feel so 
  * @return array empty if no issue is found. Array of error message otherwise
  */
 
-function tincanlaunch_process_new_package($tincanlaunch) {
-    global $DB, $CFG;
+function tincanlaunch_process_new_package($tincanlaunch, $packagefile) {
+    global $DB, $CFG, $SUBCFG;
 
     $cmid = $tincanlaunch->coursemodule;
     $context = context_module::instance($cmid);
+
+    $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
+    $contentarea = $SUBCFG->packagefiles_contentarea[$packagefile];
 
     // Reload TinCan instance.
     $record = $DB->get_record('tincanlaunch', array('id' => $tincanlaunch->id));
 
     $fs = get_file_storage();
-    $fs->delete_area_files($context->id, 'mod_tincanlaunch', 'package');
+    $fs->delete_area_files($context->id, 'mod_tincanlaunch', $filearea);
     file_save_draft_area_files(
-        $tincanlaunch->packagefile,
+        $tincanlaunch->$packagefile,
         $context->id,
         'mod_tincanlaunch',
-        'package',
+        $filearea,
         0,
         array('subdirs' => 0, 'maxfiles' => 1)
     );
 
     // Get filename of zip that was uploaded.
-    $files = $fs->get_area_files($context->id, 'mod_tincanlaunch', 'package', 0, '', false);
+    $files = $fs->get_area_files($context->id, 'mod_tincanlaunch', $filearea, 0, '', false);
     if (count($files) < 1) {
         return false;
     }
@@ -691,16 +661,16 @@ function tincanlaunch_process_new_package($tincanlaunch) {
 
     $packagefile = false;
 
-    $packagefile = $fs->get_file($context->id, 'mod_tincanlaunch', 'package', 0, '/', $zipfilename);
+    $packagefile = $fs->get_file($context->id, 'mod_tincanlaunch', $filearea, 0, '/', $zipfilename);
 
-    $fs->delete_area_files($context->id, 'mod_tincanlaunch', 'content');
+    $fs->delete_area_files($context->id, 'mod_tincanlaunch', $contentarea);
 
     $packer = get_file_packer('application/zip');
-    $packagefile->extract_to_storage($packer, $context->id, 'mod_tincanlaunch', 'content', 0, '/');
+    $packagefile->extract_to_storage($packer, $context->id, 'mod_tincanlaunch', $contentarea, 0, '/');
 
     // If the tincan.xml file isn't there, don't do try to use it.
     // This is unlikely as it should have been checked when the file was validated.
-    if ($manifestfile = $fs->get_file($context->id, 'mod_tincanlaunch', 'content', 0, '/', 'tincan.xml')) {
+    if ($manifestfile = $fs->get_file($context->id, 'mod_tincanlaunch', $contentarea, 0, '/', 'tincan.xml')) {
         $xmltext = $manifestfile->get_content();
 
         $defaultorgid = 0;
@@ -723,13 +693,43 @@ function tincanlaunch_process_new_package($tincanlaunch) {
         // Skip if not. (The Moodle admin will need to enter the url manually).
         foreach ($manifest[0]["children"][0]["children"][0]["children"] as $property) {
             if ($property["name"] === "LAUNCH") {
-                $record->tincanlaunchurl = $CFG->wwwroot."/pluginfile.php/".$context->id."/mod_tincanlaunch/"
+                $tincanlaunchurl = $CFG->wwwroot."/pluginfile.php/".$context->id."/mod_tincanlaunch/"
                 .$manifestfile->get_filearea()."/".$property["tagData"];
+                $result = tincanlaunch_set_launch_url($tincanlaunch, $filearea, $cmid, $tincanlaunchurl);
             }
         }
     }
     // Save reference.
     return $DB->update_record('tincanlaunch', $record);
+}
+
+// Updates the launch url or inserts a new one if that one doesn't exist yet
+function tincanlaunch_set_launch_url($tincanlaunch, $packagefile, $cmid, $tincanlaunchurl) {
+    global $SUBCFG, $DB;
+
+    $lang = $SUBCFG->packagefiles_lang[$packagefile];
+    $env = $SUBCFG->packagefiles_env[$packagefile];
+    $params = array(
+        'tincanlaunchid' => $tincanlaunch->id,
+        'lang' => $lang,
+        'environment' => $env
+    );
+
+    $tincanlaunch_url_record = $DB->get_record('tincanlaunch_urls', $params);
+    $result = false;
+    if (!empty($tincanlaunch_url_record)) {
+        $tincanlaunch_url_record->tincanlaunchurl = $tincanlaunchurl;
+        $result = $DB->update_record('tincanlaunch_urls', $tincanlaunch_url_record);
+    } else {
+        $tincanlaunch_url_record = new stdClass();
+        $tincanlaunch_url_record->tincanlaunchid = $tincanlaunch->id;
+        $tincanlaunch_url_record->coursemoduleid = $cmid;
+        $tincanlaunch_url_record->lang = $lang;
+        $tincanlaunch_url_record->environment = $env;
+        $tincanlaunch_url_record->tincanlaunchurl = $tincanlaunchurl;
+        $result = $DB->insert_record('tincanlaunch_urls', $tincanlaunch_url_record);
+    }
+    return $result;
 }
 
 /**
@@ -740,12 +740,12 @@ function tincanlaunch_process_new_package($tincanlaunch) {
  * @param stored_file $file a Zip file.
  * @return array empty if no issue is found. Array of error message otherwise
  */
-function tincanlaunch_validate_package($file) {
+function tincanlaunch_validate_package($file, $packagefile_name) {
     $packer = get_file_packer('application/zip');
     $errors = array();
     $filelist = $file->list_files($packer);
     if (!is_array($filelist)) {
-        $errors['packagefile'] = get_string('badarchive', 'tincanlaunch');
+        $errors[$packagefile_name] = get_string('badarchive', 'tincanlaunch');
     } else {
         $badmanifestpresent = false;
         foreach ($filelist as $info) {
@@ -760,9 +760,9 @@ function tincanlaunch_validate_package($file) {
             }
         }
         if ($badmanifestpresent) {
-            $errors['packagefile'] = get_string('badimsmanifestlocation', 'tincanlaunch');
+            $errors[$packagefile_name] = get_string('badimsmanifestlocation', 'tincanlaunch');
         } else {
-            $errors['packagefile'] = get_string('nomanifest', 'tincanlaunch');
+            $errors[$packagefile_name] = get_string('nomanifest', 'tincanlaunch');
         }
     }
     return $errors;

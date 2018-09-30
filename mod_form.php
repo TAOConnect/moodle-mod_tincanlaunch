@@ -77,8 +77,6 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
         $mform->addElement('html', html_writer::tag('label',get_string('english_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px')));
           // Start required Fields for launchurl.
-        $mform->addElement('hidden', 'lang_1', 'en');
-        $mform->addElement('hidden', 'environment_1', 'desktop');
         $mform->addElement('text', 'tincanlaunchurl_1', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
         $mform->setType('tincanlaunchurl_1', PARAM_TEXT);
         $mform->addRule('tincanlaunchurl_1', null, 'required', null, 'client');
@@ -102,8 +100,6 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         
         //section for mobile starts here    
         $mform->addElement('html', html_writer::tag('label',get_string('english_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
-        $mform->addElement('hidden', 'lang_2', 'en');
-        $mform->addElement('hidden', 'environment_2', 'mobile');
         // Start required Fields for launchurl.
         $mform->addElement('text', 'tincanlaunchurl_2', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
         $mform->setType('tincanlaunchurl_2', PARAM_TEXT);
@@ -125,9 +121,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         $mform->addHelpButton('packagefile_2', 'tincanpackage', 'tincanlaunch');
         
         //section for french desktop starts here.
-         $mform->addElement('html', html_writer::tag('label',get_string('french_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
-        $mform->addElement('hidden', 'lang_3', 'fr');
-        $mform->addElement('hidden', 'environment_3', 'desktop');
+        $mform->addElement('html', html_writer::tag('label',get_string('french_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
         // Start required Fields for launchurl.
         $mform->addElement('text', 'tincanlaunchurl_3', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
         $mform->setType('tincanlaunchurl_3', PARAM_TEXT);
@@ -151,8 +145,6 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         //  
        //section for french mobile starts here 
         $mform->addElement('html', html_writer::tag('label',get_string('french_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px')));
-        $mform->addElement('hidden', 'lang_4', 'fr');
-        $mform->addElement('hidden', 'environment_4', 'mobile');
         // Start required Fields for launchurl.
         $mform->addElement('text', 'tincanlaunchurl_4', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
         $mform->setType('tincanlaunchurl_4', PARAM_TEXT);
@@ -173,7 +165,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         );
         $mform->addHelpButton('packagefile_4', 'tincanpackage', 'tincanlaunch'); 
         
-      //section for french mobile end here   
+        // section for french mobile end here   
        
         // mobile section end here
         
@@ -331,7 +323,8 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
     public function data_preprocessing(&$defaultvalues) {
         parent::data_preprocessing($defaultvalues);
 
-        global $DB;
+        global $CFG, $DB;
+        require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
         // Determine if default lrs settings were overriden.
         if (!empty($defaultvalues['overridedefaults'])) {
@@ -357,12 +350,16 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             }
         }
 
-        $draftitemid = file_get_submitted_draft_itemid('packagefile');
-        file_prepare_draft_area(
-                $draftitemid, $this->context->id, 'mod_tincanlaunch', 'package', 0, array('subdirs' => 0, 'maxfiles' => 1)
-        );
-        $defaultvalues['packagefile'] = $draftitemid;
-
+        $packagefiles = $SUBCFG->packagefiles;
+        foreach ($packagefiles as $packagefile) {
+            $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
+            $draftitemid = file_get_submitted_draft_itemid($packagefile);
+            file_prepare_draft_area(
+                $draftitemid, $this->context->id, 'mod_tincanlaunch', $filearea, 0, array('subdirs' => 0, 'maxfiles' => 1)
+            );
+            $defaultvalues[$packagefile] = $draftitemid;
+        }
+        
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
@@ -373,10 +370,21 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
 
     // Validate the form elements after submitting (server-side).
     public function validation($data, $files) {
-        global $CFG, $USER;
+        global $CFG;
+        require($CFG->dirroot . '/mod/tincanlaunch/config.php');
+
         $errors = parent::validation($data, $files);
-        if (!empty($data['packagefile'])) {
-            $draftitemid = file_get_submitted_draft_itemid('packagefile');
+        $packagefiles = $SUBCFG->packagefiles;
+        foreach ($packagefiles as $packagefile) {
+            $this->validate_packagefile($data, $packagefile, $errors);
+        }
+        return $errors;
+    }
+
+    private function validate_packagefile($data, $packagefile_name, &$errors) {
+        global $CFG, $USER;
+        if (!empty($data[$packagefile_name])) {
+            $draftitemid = file_get_submitted_draft_itemid($packagefile_name);
 
             file_prepare_draft_area(
                     $draftitemid, $this->context->id, 'mod_tincanlaunch', 'packagefilecheck', null, array('subdirs' => 0, 'maxfiles' => 1)
@@ -391,10 +399,9 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
                 return $errors;
             }
             $file = reset($files);
-            // Validate this TinCan package.
-            $errors = array_merge($errors, tincanlaunch_validate_package($file));
-        }
-        return $errors;
-    }
 
+            // Validate this TinCan package.
+            $errors = array_merge($errors, tincanlaunch_validate_package($file, $packagefile_name));
+        }
+    }
 }

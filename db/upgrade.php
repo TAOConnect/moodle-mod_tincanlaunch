@@ -42,7 +42,7 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2018093000) {
+    if ($oldversion < 2018100100) {
         
         // Define table tincanlaunch_urls to be created for multiple launch URLS to belong to a single tincanlaunch object
         $tincanlaunch_urls = new xmldb_table('tincanlaunch_urls');

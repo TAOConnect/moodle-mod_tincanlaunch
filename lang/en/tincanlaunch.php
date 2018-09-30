@@ -150,3 +150,13 @@ $string['english_desktop'] = 'English, Desktop';
 $string['english_mobile'] = 'English, Mobile';
 $string['french_desktop'] = 'French, Desktop';
 $string['french_mobile'] = 'French, Mobile';
+
+$string['package_en_desktop'] = 'Package for English, Desktop';
+$string['package_en_mobile'] = 'Package for English, Mobile';
+$string['package_fr_desktop'] = 'Package for French, Desktop';
+$string['package_fr_mobile'] = 'Package for French, Mobile';
+
+$string['content_en_desktop'] = 'Content for English, Desktop';
+$string['content_en_mobile'] = 'Content for English, Mobile';
+$string['content_fr_desktop'] = 'Content for French, Desktop';
+$string['content_fr_mobile'] = 'Content for French, Mobile';
