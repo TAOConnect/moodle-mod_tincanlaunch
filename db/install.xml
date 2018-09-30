@@ -62,5 +62,21 @@
         <INDEX NAME="credentialid" UNIQUE="false" FIELDS="credentialid" COMMENT="ID of the credentials created."/>
       </INDEXES>
     </TABLE>
+	<TABLE NAME="tincanlaunch_urls" COMMENT="tincanlaunch_urls table retrofitted from MySQL">
+		<KEYS>
+			<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        	<KEY NAME="tclid_cmid_lang_env_unique" TYPE="unique" FIELDS="tincanlaunchid,environment,coursemoduleid,lang"/>
+        	<KEY NAME="coursemoduleid_fk" TYPE="foreign" FIELDS="coursemoduleid" REFTABLE="mdl_course_modules" REFFIELDS="id"/>
+        	<KEY NAME="tincanlaunchid_fk" TYPE="foreign" FIELDS="tincanlaunchid" REFTABLE="mdl_tincanlaunch" REFFIELDS="id"/>
+		</KEYS>
+		<FIELDS>
+			<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+			<FIELD NAME="tincanlaunchid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+			<FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+			<FIELD NAME="lang" TYPE="varchar" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+			<FIELD NAME="environment" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+			<FIELD NAME="tincanlaunchurl" TYPE="char" LENGTH="255" NOTNULL="true"  SEQUENCE="false"/>
+		</FIELDS>
+	</TABLE>
   </TABLES>
 </XMLDB>

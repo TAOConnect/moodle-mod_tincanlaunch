@@ -27,6 +27,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/mod/tincanlaunch/lib.php");
+require_once($CFG->dirroot . '/lib/classes/useragent.php');
 
 /**
  * Send a statement that the activity was launched.
@@ -181,6 +182,44 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
     if ($cmid) {
         $args['coursemoduleid'] = $cmid;
     }
+
+    // get the correct url for the right environment based on the current user's language and environment (user agent)
+	$userdevice = core_useragent::get_user_device_type();
+	$environment = $userdevice;
+	if ($userdevice == 'default') {
+		$environment = 'desktop';
+	}
+
+	global $USER;
+	$conditionparams = array('coursemoduleid' => $cm->id, 'lang' => strtolower($USER->lang), 'environment' => $environment);
+	$tincanlaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+	if (!empty($tincanlaunchurl)) {
+		$tincanlaunchurl = $tincanlaunchurl;
+	} else {
+		// Falling back to lang only if environment not found.
+		unset($conditionparams['environment']);
+		$onlylanglaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+		if (!empty($onlylanglaunchurl)) {
+			$tincanlaunchurl = $onlylanglaunchurl;
+		} else {
+			// Falling back to USER environment + $CFG->lang (default setting for language).
+			$conditionparams['environment'] = $environment;
+			$conditionparams['lang'] = strtolower($CFG->lang);
+			$defaultlanglaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+			if (!empty($defaultlanglaunchurl)) {
+				$tincanlaunchurl = $defaultlanglaunchurl;
+			} else {
+				// Final case defaulting back to EN + desktop.
+				unset($conditionparams['environment']);
+				$tincanlaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
+			}
+		}
+	}
+
+    if (empty($tincanlaunchurl)) {
+        print_error('nourlfound', 'mod_tincanlaunch');
+    }
+
     $rtnstring = $tincanlaunch->tincanlaunchurl."?".http_build_query(
         $args,
         '',

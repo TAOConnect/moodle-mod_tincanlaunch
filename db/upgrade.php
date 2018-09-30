@@ -42,6 +42,30 @@ function xmldb_tincanlaunch_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2018093000) {
+        
+        // Define table tincanlaunch_urls to be created for multiple launch URLS to belong to a single tincanlaunch object
+        $tincanlaunch_urls = new xmldb_table('tincanlaunch_urls');
+        $tincanlaunch_urls->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $tincanlaunch_urls->add_field('tincanlaunchid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $tincanlaunch_urls->add_field('coursemoduleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, null);
+        $tincanlaunch_urls->add_field('lang', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, '', null);
+        $tincanlaunch_urls->add_field('environment', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', null);
+
+        // key and foreign key constraints
+        $tincanlaunch_urls->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $tincanlaunch_urls->add_key('tincanlaunchid_fk', XMLDB_KEY_FOREIGN, array('tincanlaunchid'), 'tincanlaunch', array('id'));
+        $tincanlaunch_urls->add_key('coursemoduleid_fk', XMLDB_KEY_FOREIGN, array('coursemoduleid'), 'course_modules', array('id'));
+        $tincanlaunch_urls->add_key('tclid_cmid_lang_env_unique', XMLDB_KEY_UNIQUE, array('tincanlaunchid', 'coursemoduleid', 'lang', 'environment'));
+
+        if (!$dbman->table_exists($tincanlaunch_urls)) {
+            $dbman->create_table($tincanlaunch_urls);
+        }
+
+        upgrade_mod_savepoint(true, 2018093000, 'tincanlaunch');
+
+	}
+
     if ($oldversion < 2016021508) {
 
         // Define table tincanlaunch_credentials to be created.

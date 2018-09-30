@@ -141,3 +141,12 @@ $string['eventactivitycompleted'] = 'Activity completed';
 $string['tincanlaunch:addinstance'] = 'Add a new Tin Can (xAPI) activity to a course';
 
 $string['expirecredentials'] = 'Expire credentials';
+
+// Tincanlaunch errors
+$string['nourlfound'] = 'No launch URL was found for this activity';
+
+// Multilang strings
+$string['english_desktop'] = 'English, Desktop';
+$string['english_mobile'] = 'English, Mobile';
+$string['french_desktop'] = 'French, Desktop';
+$string['french_mobile'] = 'French, Mobile';

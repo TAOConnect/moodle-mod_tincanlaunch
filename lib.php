@@ -416,17 +416,60 @@ function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forc
     require_login($course, true, $cm);
     $canmanageactivity = has_capability('moodle/course:manageactivities', $context);
 
-    if ($filearea === 'content') {
-        $filename = array_pop($args);
-        $filepath = implode('/', $args);
-        $lifetime = null;
-    } else if ($filearea === 'package') {
-        $relativepath = implode('/', $args);
-        $fullpath = "/$context->id/tincanlaunch/package/0/$relativepath";
-        $lifetime = 0; // No caching here.
-
-    } else {
-        return false;
+    switch ($filearea) {
+        case 'content':
+            $filename = array_pop($args);
+            $filepath = implode('/', $args);
+            $lifetime = null;
+            break;
+        case 'package':
+            $relativepath = implode('/', $args);
+            $fullpath = "/$context->id/tincanlaunch/package/0/$relativepath";
+            $lifetime = 0; // No caching here.
+            break;
+        case 'content_en_desktop':
+            $filename = array_pop($args);
+            $filepath = implode('/', $args);
+            $lifetime = null;
+            break;
+        case 'package_en_desktop':
+            $relativepath = implode('/', $args);
+            $fullpath = "/$context->id/tincanlaunch/package_en_desktop/0/$relativepath";
+            $lifetime = 0; // No caching here.
+            break;
+        case 'content_en_mobile':
+            $filename = array_pop($args);
+            $filepath = implode('/', $args);
+            $lifetime = null;
+            break;
+        case 'package_en_mobile':
+            $relativepath = implode('/', $args);
+            $fullpath = "/$context->id/tincanlaunch/package_en_mobile/0/$relativepath";
+            $lifetime = 0; // No caching here.
+            break;
+        case 'content_fr_desktop':
+            $filename = array_pop($args);
+            $filepath = implode('/', $args);
+            $lifetime = null;
+            break;
+        case 'package_fr_desktop':
+            $relativepath = implode('/', $args);
+            $fullpath = "/$context->id/tincanlaunch/package_fr_desktop/0/$relativepath";
+            $lifetime = 0; // No caching here.
+            break;
+        case 'content_fr_mobile':
+            $filename = array_pop($args);
+            $filepath = implode('/', $args);
+            $lifetime = null;
+            break;
+        case 'package_fr_mobile':
+            $relativepath = implode('/', $args);
+            $fullpath = "/$context->id/tincanlaunch/package_en_desktop/0/$relativepath";
+            $lifetime = 0; // No caching here.
+            break;
+        default:
+            return false;
+            break;
     }
 
     $fs = get_file_storage();
