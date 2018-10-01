@@ -190,7 +190,7 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
 		$environment = 'desktop';
 	}
 
-	$conditionparams = array('coursemoduleid' => $cmid, 'lang' => strtolower($USER->lang), 'environment' => $environment);
+	$conditionparams = array('coursemoduleid' => $cmid, 'lang' => current_language(), 'environment' => $environment);
 	$tincanlaunchurl = $DB->get_field('tincanlaunch_urls', 'tincanlaunchurl', $conditionparams);
 	if (empty($tincanlaunchurl)) {
 		// Falling back to lang only if environment not found.
@@ -213,6 +213,12 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
 		}
 	}
 
+    // if it's still empty, fetch from the tincanlaunch table
+    if (empty($tincanlaunchurl)) {
+        $tincanlaunchurl = $tincanlaunch->tincanlaunchurl;
+    }
+    
+    // if after all checks, it's still empty, then throw an error
     if (empty($tincanlaunchurl)) {
         print_error('nourlfound', 'mod_tincanlaunch');
     }

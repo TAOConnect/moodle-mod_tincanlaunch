@@ -115,8 +115,9 @@ if ($lrsrespond != 200 && $lrsrespond != 404) {
     }
     die();
 }
-
-echo "<h1>$tincanlaunch->name</h1>";
+require_once($CFG->dirroot . '/filter/multilang2/filter.php');
+$filter = new filter_multilang2(context_system::instance(), array());
+echo html_writer::tag('h1', $filter->filter($tincanlaunch->name));
 
 if ($lrsrespond == 200) {
     $registrationdatafromlrs = json_decode($getregistrationdatafromlrsstate->content->getContent(), true);

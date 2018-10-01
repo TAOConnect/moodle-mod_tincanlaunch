@@ -703,6 +703,12 @@ function tincanlaunch_process_new_package($tincanlaunch, $packagefile_param) {
             if ($property["name"] === "LAUNCH") {
                 $tincanlaunchurl = $CFG->wwwroot."/pluginfile.php/".$context->id."/mod_tincanlaunch/"
                 .$manifestfile->get_filearea()."/".$property["tagData"];
+
+                // only if the tincanlaunch session is for english desktop, store it in the 
+                if ($TCLCFG->packagefiles_lang[$packagefile_param] === 'en' && $TCLCFG->packagefiles_env[$packagefile_param] === 'desktop') {
+                    $tincanlaunch->tincanlaunchurl = $tincanlaunchurl;
+                }
+
                 $result = tincanlaunch_set_launch_url($tincanlaunch, $packagefile_param, $cmid, $tincanlaunchurl);
             }
         }
