@@ -80,7 +80,8 @@ function tincanlaunch_supports($feature) {
  * @return int The id of the newly inserted tincanlaunch record
  */
 function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_form $mform = null) {
-    global $DB, $CFG, $SUBCFG;
+    global $DB, $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
     $tincanlaunch->timecreated = time();
 
@@ -100,7 +101,7 @@ function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_
     }
 
     // Process uploaded file.
-    $packagefiles = $SUBCFG->packagefiles;
+    $packagefiles = $TCLCFG->packagefiles;
     foreach ($packagefiles as $packagefile) {
         if (!empty($tincanlaunch->$packagefile)) {
             tincanlaunch_process_new_package($tincanlaunch, $packagefile);
@@ -122,10 +123,12 @@ function tincanlaunch_add_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_
  * @return boolean Success/Fail
  */
 function tincanlaunch_update_instance(stdClass $tincanlaunch, mod_tincanlaunch_mod_form $mform = null) {
-    global $DB, $CFG, $SUBCFG;
+    global $DB, $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
     $tincanlaunch->timemodified = time();
     $tincanlaunch->id = $tincanlaunch->instance;
+    $counter = 0;
 
     $tincanlaunchlrs = tincanlaunch_build_lrs_settings($tincanlaunch);
 
@@ -156,7 +159,7 @@ function tincanlaunch_update_instance(stdClass $tincanlaunch, mod_tincanlaunch_m
         return false;
     }
 
-    $packagefiles = $SUBCFG->packagefiles;
+    $packagefiles = $TCLCFG->packagefiles;
     foreach ($packagefiles as $packagefile) {
         if (!empty($tincanlaunch->$packagefile)) {
             tincanlaunch_process_new_package($tincanlaunch, $packagefile);
@@ -349,13 +352,15 @@ function tincanlaunch_get_extra_capabilities() {
  * @return array of [(string)filearea] => (string)description
  */
 function tincanlaunch_get_file_areas($course, $cm, $context) {
-    global $SUBCFG;
-    $packagefiles = $SUBCFG->packagefiles;
+    global $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
+
+    $packagefiles = $TCLCFG->packagefiles;
     $areas = array();
     
     foreach ($packagefiles as $packagefile) {
-        $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
-        $contentarea = $SUBCFG->packagefiles_contentarea[$packagefile];
+        $filearea = $TCLCFG->packagefiles_filearea[$packagefile];
+        $contentarea = $TCLCFG->packagefiles_contentarea[$packagefile];
         $areas[$filearea] = get_string($filearea, 'tincanlaunch');
         $areas[$contentarea] = get_string($contentarea, 'tincanlaunch');
     }
@@ -380,7 +385,8 @@ function tincanlaunch_get_file_areas($course, $cm, $context) {
  * @return file_info instance or null if not found
  */
 function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
-    global $CFG, $SUBCFG;
+    global $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
     if (!has_capability('moodle/course:managefiles', $context)) {
         return null;
@@ -388,7 +394,7 @@ function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $f
 
     $fs = get_file_storage();
 
-    $packagefiles = array_values($SUBCFG->packagefiles_filearea);
+    $packagefiles = array_values($TCLCFG->packagefiles_filearea);
     if (in_array($filearea, $packagefiles)) {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
@@ -423,7 +429,8 @@ function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $f
  * @return bool false if file not found, does not return if found - just send the file
  */
 function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
-    global $CFG, $DB, $SUBCFG;
+    global $CFG, $DB;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
@@ -433,8 +440,8 @@ function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forc
     $filepath = implode('/', $args);
 
     // get potential fileareas and content areas
-    $fileareas = array_values($SUBCFG->packagefiles_filearea);
-    $contentareas = array_values($SUBCFG->packagefiles_contentarea);
+    $fileareas = array_values($TCLCFG->packagefiles_filearea);
+    $contentareas = array_values($TCLCFG->packagefiles_contentarea);
 
     if (in_array($filearea, $contentareas)) {
         $lifetime = null;
@@ -627,14 +634,15 @@ It looks like the standard Quiz module does that same thing, so I don't feel so 
  * @return array empty if no issue is found. Array of error message otherwise
  */
 
-function tincanlaunch_process_new_package($tincanlaunch, $packagefile) {
-    global $DB, $CFG, $SUBCFG;
+function tincanlaunch_process_new_package($tincanlaunch, $packagefile_param) {
+    global $DB, $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
     $cmid = $tincanlaunch->coursemodule;
     $context = context_module::instance($cmid);
 
-    $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
-    $contentarea = $SUBCFG->packagefiles_contentarea[$packagefile];
+    $filearea = $TCLCFG->packagefiles_filearea[$packagefile_param];
+    $contentarea = $TCLCFG->packagefiles_contentarea[$packagefile_param];
 
     // Reload TinCan instance.
     $record = $DB->get_record('tincanlaunch', array('id' => $tincanlaunch->id));
@@ -642,7 +650,7 @@ function tincanlaunch_process_new_package($tincanlaunch, $packagefile) {
     $fs = get_file_storage();
     $fs->delete_area_files($context->id, 'mod_tincanlaunch', $filearea);
     file_save_draft_area_files(
-        $tincanlaunch->$packagefile,
+        $tincanlaunch->$packagefile_param,
         $context->id,
         'mod_tincanlaunch',
         $filearea,
@@ -695,20 +703,22 @@ function tincanlaunch_process_new_package($tincanlaunch, $packagefile) {
             if ($property["name"] === "LAUNCH") {
                 $tincanlaunchurl = $CFG->wwwroot."/pluginfile.php/".$context->id."/mod_tincanlaunch/"
                 .$manifestfile->get_filearea()."/".$property["tagData"];
-                $result = tincanlaunch_set_launch_url($tincanlaunch, $filearea, $cmid, $tincanlaunchurl);
+                $result = tincanlaunch_set_launch_url($tincanlaunch, $packagefile_param, $cmid, $tincanlaunchurl);
             }
         }
     }
+
     // Save reference.
     return $DB->update_record('tincanlaunch', $record);
 }
 
 // Updates the launch url or inserts a new one if that one doesn't exist yet
 function tincanlaunch_set_launch_url($tincanlaunch, $packagefile, $cmid, $tincanlaunchurl) {
-    global $SUBCFG, $DB;
+    global $DB, $CFG;
+    require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
-    $lang = $SUBCFG->packagefiles_lang[$packagefile];
-    $env = $SUBCFG->packagefiles_env[$packagefile];
+    $lang = $TCLCFG->packagefiles_lang[$packagefile];
+    $env = $TCLCFG->packagefiles_env[$packagefile];
     $params = array(
         'tincanlaunchid' => $tincanlaunch->id,
         'lang' => $lang,

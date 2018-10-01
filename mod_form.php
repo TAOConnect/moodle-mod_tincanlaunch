@@ -40,6 +40,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
     public function definition() {
 
         global $CFG;
+        require($CFG->dirroot . '/mod/tincanlaunch/config.php');
         $cfgtincanlaunch = get_config('tincanlaunch');
         $mform = $this->_form;
 
@@ -75,99 +76,29 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         $mform->setDefault('tincanactivityid', 'https://example.com/example-activity');
         // End required Fields for Activity.
 
-        $mform->addElement('html', html_writer::tag('label',get_string('english_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px')));
-          // Start required Fields for launchurl.
-        $mform->addElement('text', 'tincanlaunchurl_1', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
-        $mform->setType('tincanlaunchurl_1', PARAM_TEXT);
-        $mform->addRule('tincanlaunchurl_1', null, 'required', null, 'client');
-        $mform->addRule('tincanlaunchurl_1', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('tincanlaunchurl_1', 'tincanlaunchurl', 'tincanlaunch');
-        $mform->setDefault('tincanlaunchurl_1', 'https://example.com/example-activity/index.html');
-    
-       //New local package  upload for enlish desktop.
-
+        // New local package  upload for enlish desktop.
         $filemanageroptions = array();
         $filemanageroptions['accepted_types'] = array('.zip');
         $filemanageroptions['maxbytes'] = 0;
         $filemanageroptions['maxfiles'] = 1;
         $filemanageroptions['subdirs'] = 0;
 
-        $mform->addElement(
-                'filemanager', 'packagefile_1', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
-        );
-        $mform->addHelpButton('packagefile_1', 'tincanpackage', 'tincanlaunch');
-
+        foreach ($TCLCFG->packagefiles_tincanlaunchurl as $packagefile => $tincanlaunchurl) {
+            $mform->addElement('static', $packagefile . $tincanlaunchurl, get_string($TCLCFG->packagefiles_filearea[$packagefile], 'tincanlaunch'), '');
+              // Start required Fields for launchurl.
+            $mform->addElement('text', $tincanlaunchurl, get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
+            $mform->setType($tincanlaunchurl, PARAM_TEXT);
+            $mform->addRule($tincanlaunchurl, null, 'required', null, 'client');
+            $mform->addRule($tincanlaunchurl, get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+            $mform->addHelpButton($tincanlaunchurl, 'tincanlaunchurl', 'tincanlaunch');
+            $mform->setDefault($tincanlaunchurl, 'https://example.com/example-activity/index.html');
         
-        //section for mobile starts here    
-        $mform->addElement('html', html_writer::tag('label',get_string('english_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
-        // Start required Fields for launchurl.
-        $mform->addElement('text', 'tincanlaunchurl_2', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
-        $mform->setType('tincanlaunchurl_2', PARAM_TEXT);
-        $mform->addRule('tincanlaunchurl_2', null, 'required', null, 'client');
-        $mform->addRule('tincanlaunchurl_2', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('tincanlaunchurl_2', 'tincanlaunchurl', 'tincanlaunch');
-        $mform->setDefault('tincanlaunchurl_2', 'https://example.com/example-activity/index.html');
-    
-        // New local package for mobile upload.
-        $filemanageroptions = array();
-        $filemanageroptions['accepted_types'] = array('.zip');
-        $filemanageroptions['maxbytes'] = 0;
-        $filemanageroptions['maxfiles'] = 1;
-        $filemanageroptions['subdirs'] = 0;
-
-        $mform->addElement(
-                'filemanager', 'packagefile_2', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
-        );
-        $mform->addHelpButton('packagefile_2', 'tincanpackage', 'tincanlaunch');
+            $mform->addElement(
+                    'filemanager', $packagefile, get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
+            );
+            $mform->addHelpButton($packagefile, 'tincanpackage', 'tincanlaunch');
+        }
         
-        //section for french desktop starts here.
-        $mform->addElement('html', html_writer::tag('label',get_string('french_desktop', 'tincanlaunch'),array('style'=>'margin-left:400px'))); 
-        // Start required Fields for launchurl.
-        $mform->addElement('text', 'tincanlaunchurl_3', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
-        $mform->setType('tincanlaunchurl_3', PARAM_TEXT);
-        $mform->addRule('tincanlaunchurl_3', null, 'required', null, 'client');
-        $mform->addRule('tincanlaunchurl_3', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('tincanlaunchurl_3', 'tincanlaunchurl', 'tincanlaunch');
-        $mform->setDefault('tincanlaunchurl_3', 'https://example.com/example-activity/index.html');
-    
-        // New local package for mobile upload.
-        $filemanageroptions = array();
-        $filemanageroptions['accepted_types'] = array('.zip');
-        $filemanageroptions['maxbytes'] = 0;
-        $filemanageroptions['maxfiles'] = 1;
-        $filemanageroptions['subdirs'] = 0;
-
-        $mform->addElement(
-                'filemanager', 'packagefile_3', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
-        );
-        $mform->addHelpButton('packagefile_3', 'tincanpackage', 'tincanlaunch');   
-        //section for french desktop end here
-        //  
-       //section for french mobile starts here 
-        $mform->addElement('html', html_writer::tag('label',get_string('french_mobile', 'tincanlaunch'),array('style'=>'margin-left:400px')));
-        // Start required Fields for launchurl.
-        $mform->addElement('text', 'tincanlaunchurl_4', get_string('tincanlaunchurl', 'tincanlaunch'), array('size' => '64'));
-        $mform->setType('tincanlaunchurl_4', PARAM_TEXT);
-        $mform->addRule('tincanlaunchurl_4', null, 'required', null, 'client');
-        $mform->addRule('tincanlaunchurl_4', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('tincanlaunchurl_4', 'tincanlaunchurl', 'tincanlaunch');
-        $mform->setDefault('tincanlaunchurl_4', 'https://example.com/example-activity/index.html');
-    
-        // New local package for mobile upload.
-        $filemanageroptions = array();
-        $filemanageroptions['accepted_types'] = array('.zip');
-        $filemanageroptions['maxbytes'] = 0;
-        $filemanageroptions['maxfiles'] = 1;
-        $filemanageroptions['subdirs'] = 0;
-
-        $mform->addElement(
-                'filemanager', 'packagefile_4', get_string('tincanpackage', 'tincanlaunch'), null, $filemanageroptions
-        );
-        $mform->addHelpButton('packagefile_4', 'tincanpackage', 'tincanlaunch'); 
-        
-        // section for french mobile end here   
-       
-        // mobile section end here
         
         // Start advanced settings.
         $mform->addElement('header', 'lrsheading', get_string('lrsheading', 'tincanlaunch'));
@@ -350,9 +281,9 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
             }
         }
 
-        $packagefiles = $SUBCFG->packagefiles;
+        $packagefiles = $TCLCFG->packagefiles;
         foreach ($packagefiles as $packagefile) {
-            $filearea = $SUBCFG->packagefiles_filearea[$packagefile];
+            $filearea = $TCLCFG->packagefiles_filearea[$packagefile];
             $draftitemid = file_get_submitted_draft_itemid($packagefile);
             file_prepare_draft_area(
                 $draftitemid, $this->context->id, 'mod_tincanlaunch', $filearea, 0, array('subdirs' => 0, 'maxfiles' => 1)
@@ -374,7 +305,7 @@ class mod_tincanlaunch_mod_form extends moodleform_mod {
         require($CFG->dirroot . '/mod/tincanlaunch/config.php');
 
         $errors = parent::validation($data, $files);
-        $packagefiles = $SUBCFG->packagefiles;
+        $packagefiles = $TCLCFG->packagefiles;
         foreach ($packagefiles as $packagefile) {
             $this->validate_packagefile($data, $packagefile, $errors);
         }
