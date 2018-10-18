@@ -127,6 +127,7 @@ function tincan_launched_statement($registrationid) {
  */
 function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
     global $tincanlaunch, $CFG, $USER, $DB;
+    
     $tincanlaunchsettings = tincanlaunch_settings($tincanlaunch->id);
     $expiry = new DateTime('NOW');
     $xapiduration = $tincanlaunchsettings['tincanlaunchlrsduration'];
@@ -215,7 +216,7 @@ function tincanlaunch_get_launch_url($registrationuuid, $cmid = '') {
 
     // if it's still empty, fetch from the tincanlaunch table
     if (empty($tincanlaunchurl)) {
-        $tincanlaunchurl = $tincanlaunch->tincanlaunchurl;
+        $tincanlaunchurl = $DB->get_field('tincanlaunch', 'tincanlaunchurl', array('id' => $tincanlaunch->id));
     }
     
     // if after all checks, it's still empty, then throw an error
