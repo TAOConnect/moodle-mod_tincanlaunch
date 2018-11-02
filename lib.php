@@ -364,6 +364,10 @@ function tincanlaunch_get_file_areas($course, $cm, $context) {
         $areas[$filearea] = get_string($filearea, 'tincanlaunch');
         $areas[$contentarea] = get_string($contentarea, 'tincanlaunch');
     }
+
+    $areas['content'] = get_string('areacontent', 'scorm');
+    $areas['package'] = get_string('areapackage', 'scorm');
+
     return $areas;
 }
 
@@ -395,7 +399,7 @@ function tincanlaunch_get_file_info($browser, $areas, $course, $cm, $context, $f
     $fs = get_file_storage();
 
     $packagefiles = array_values($TCLCFG->packagefiles_filearea);
-    if (in_array($filearea, $packagefiles)) {
+    if (in_array($filearea, $packagefiles) || $filearea === 'package' /* legacy support */) {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
 
@@ -443,9 +447,9 @@ function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forc
     $fileareas = array_values($TCLCFG->packagefiles_filearea);
     $contentareas = array_values($TCLCFG->packagefiles_contentarea);
 
-    if (in_array($filearea, $contentareas)) {
+    if (in_array($filearea, $contentareas) || $filearea === 'content') {
         $lifetime = null;
-    } else if (in_array($filearea, $fileareas)) {
+    } else if (in_array($filearea, $fileareas) || $filearea === 'package') {
         $lifetime = 0; // No caching here.
     } else {
         return false;
@@ -455,7 +459,7 @@ function tincanlaunch_pluginfile($course, $cm, $context, $filearea, $args, $forc
         !$file = $fs->get_file($context->id, 'mod_tincanlaunch', $filearea, 0, '/'.$filepath.'/', $filename)
         or $file->is_directory()
     ) {
-        if (in_array($filearea, $contentareas)) { // Return file not found straight away to improve performance.
+        if (in_array($filearea, $contentareas) || $filearea === 'content') { // Return file not found straight away to improve performance.
             send_header_404();
             die;
         }

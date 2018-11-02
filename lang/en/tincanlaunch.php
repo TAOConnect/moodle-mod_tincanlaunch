@@ -151,6 +151,9 @@ $string['english_mobile'] = 'English, Mobile';
 $string['french_desktop'] = 'French, Desktop';
 $string['french_mobile'] = 'French, Mobile';
 
+$string['package'] = 'Package files';
+$string['content'] = 'Content files';
+
 $string['package_en_desktop'] = 'Package for English, Desktop';
 $string['package_en_mobile'] = 'Package for English, Mobile';
 $string['package_fr_desktop'] = 'Package for French, Desktop';
